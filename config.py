@@ -49,10 +49,17 @@ robot_start_rotation = 180      # Robot starting rotation (deg)
 robot_width = 6                 # Robot width in inches
 robot_height = 6                # Robot height in inches
 robot_outline = [               # Robot outline, relative to center position
-                pm.Vector2(-robot_width/2, -robot_width/2),
-                pm.Vector2(-robot_width/2,  robot_width/2),
-                pm.Vector2( robot_width/2,  robot_width/2),
-                pm.Vector2( robot_width/2, -robot_width/2)
+                pm.Vector2(-2.875, -4),
+                pm.Vector2(-2.875, 2.75),
+                pm.Vector2(-1.655, 4),
+                pm.Vector2(1.655, 4),
+                pm.Vector2(2.875, 2.75),
+                pm.Vector2(2.875, -4)
+                 
+                # pm.Vector2(-robot_width/2, -robot_width/2),
+                # pm.Vector2(-robot_width/2,  robot_width/2),
+                # pm.Vector2( robot_width/2,  robot_width/2),
+                # pm.Vector2( robot_width/2, -robot_width/2)
                 ]
 
 # Maze definition information
@@ -66,7 +73,7 @@ floor_seed = 5489           # Randomization seed for generating correctfloor pat
 
 # Graphics information
 frame_rate = 60             # Target frame rate (Hz)
-ppi = 16                    # Number of on-screen pixels per inch on display
+ppi = 8                    # Number of on-screen pixels per inch on display
 border_pixels = floor_segment_length * ppi  # Size of the border surrounding the maze area
 
 background_color = (43, 122, 120)
@@ -86,14 +93,14 @@ block_color = (127, 127, 0) # Tuple with robot perimeter color in (R,G,B) format
 # Motors
 m0_info = {
     'id': 'm0',
-    'position': [2, 0],
+    'position': [3.125, 0],
     'rotation': 0,
     'visible': True
 }
 
 m1_info = {
     'id': 'm0',
-    'position': [-2, 0],
+    'position': [-3.125, 0],
     'rotation': 0,
     'visible': True
 }
