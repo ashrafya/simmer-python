@@ -120,8 +120,8 @@ w0_info = {
     'ang_velocity': 0,
     'motors': [motors['m0'], motors['m1']],
     'motor_direction': [1, 1],
-    # 'bias': {'x': 0, 'y': 0, 'rotation': 0.2},
-    'error': {'x': 0.02, 'y': 0.05, 'rotation': 1}
+    'bias': {'x': 0, 'y': 0, 'rotation': 0.2},
+    # 'error': {'x': 0.02, 'y': 0.05, 'rotation': 1}
 }
 
 # d0_info = {
@@ -146,8 +146,8 @@ r0_info = {
     'ang_velocity': 120,
     'motors': [motors['m0'], motors['m1']],
     'motor_direction': [1, -1],
-    # 'bias': {'x': 0.005, 'y':0.01, 'rotation': 0.02},
-    'error': {'x': 0.003, 'y': 0.003, 'rotation': 0.02}
+    'bias': {'x': 0.005, 'y':0.01, 'rotation': 0.02},
+    # 'error': {'x': 0.003, 'y': 0.003, 'rotation': 0.02}
 }
 
 drives = {
@@ -161,7 +161,7 @@ u0_info = {
     'position': [0, 2.5],
     'height': 1,
     'rotation': 0,
-    'error': 0.02,
+    # 'error': 0.02,
     'outline': [
         pm.Vector2(-1, -0.5),
         pm.Vector2(-1, 0.5),
@@ -177,7 +177,7 @@ u1_info = {
     'position': [-2.5, 0],
     'height': 1,
     'rotation': -90,
-    'error': 0.02,
+    # 'error': 0.02,
     'outline': [
         pm.Vector2(-1, -0.5),
         pm.Vector2(-1, 0.5),
@@ -193,7 +193,7 @@ u2_info = {
     'position': [-2.5, 0],
     'height': 1,
     'rotation': 90,
-    'error': 0.02,
+    # 'error': 0.02,
     'outline': [
         pm.Vector2(-1, -0.5),
         pm.Vector2(-1, 0.5),
@@ -209,7 +209,7 @@ u3_info = {
     'position': [0, -2.5],
     'height': 1,
     'rotation': 180,
-    'error': 0.02,
+    # 'error': 0.02,
     'outline': [
         pm.Vector2(-1, -0.5),
         pm.Vector2(-1, 0.5),
