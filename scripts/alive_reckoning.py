@@ -91,31 +91,70 @@ def check_stop(value):
     print(type(value))
     print('above is the type of the value')
     
-    if value <= 5:
+    if value <= 2:
         print("STOPPPPPPPPPPPPP")
         transmit('xx')
+        return 1
+        
 while RUNNING:
 
     if ct < len(cmd_sequence):
         transmit('u0')
         time.sleep(0.1)
         print(f"Ultrasonic 0 reading: {round(responses[0], 3)}")
-        check_stop(responses[0])
+        out = check_stop(responses[0])
+        if out:
+            break
 
         transmit('u1')
         time.sleep(0.1)
         print(f"Ultrasonic 1 reading: {round(responses[0], 3)}")
-        check_stop(responses[0])
+        out = check_stop(responses[0])
+        if out:
+            break
 
         transmit('u2')
         time.sleep(0.1)
         print(f"Ultrasonic 2 reading: {round(responses[0], 3)}")
-        check_stop(responses[0])
+        out = check_stop(responses[0])
+        if out:
+            break
 
         transmit('u3')
         time.sleep(0.1)
         print(f"Ultrasonic 3 reading: {round(responses[0], 3)}")
-        check_stop(responses[0])
+        out = check_stop(responses[0])
+        if out:
+            break
+        
+        transmit('u4')
+        time.sleep(0.1)
+        print(f"Ultrasonic 4 reading: {round(responses[0], 3)}")
+        out = check_stop(responses[0])
+        if out:
+            break
+        
+        transmit('u5')
+        time.sleep(0.1)
+        print(f"Ultrasonic 3 reading: {round(responses[0], 3)}")
+        out = check_stop(responses[0])
+        if out:
+            break
+        
+        transmit('u6')
+        time.sleep(0.1)
+        print(f"Ultrasonic 3 reading: {round(responses[0], 3)}")
+        out = check_stop(responses[0])
+        if out:
+            break
+        
+        transmit('u7')
+        time.sleep(0.1)
+        print(f"Ultrasonic 3 reading: {round(responses[0], 3)}")
+        out = check_stop(responses[0])
+        if out:
+            break
+        
         transmit(cmd_sequence[ct])
         time.sleep(0.1)
 

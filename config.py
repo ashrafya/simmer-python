@@ -120,7 +120,7 @@ w0_info = {
     'ang_velocity': 0,
     'motors': [motors['m0'], motors['m1']],
     'motor_direction': [1, 1],
-    'bias': {'x': 0, 'y': 0, 'rotation': 0.2},
+    'bias': {'x': 0, 'y': 0, 'rotation': 0.0},
     # 'error': {'x': 0.02, 'y': 0.05, 'rotation': 1}
 }
 
@@ -146,7 +146,7 @@ r0_info = {
     'ang_velocity': 120,
     'motors': [motors['m0'], motors['m1']],
     'motor_direction': [1, -1],
-    'bias': {'x': 0.005, 'y':0.01, 'rotation': 0.02},
+    'bias': {'x': 0.005, 'y':0.01, 'rotation': 0.00},
     # 'error': {'x': 0.003, 'y': 0.003, 'rotation': 0.02}
 }
 
@@ -220,6 +220,71 @@ u3_info = {
     'visible_measurement': True
 }
 
+u4_info = {
+    'id': 'u4',
+    'position': [-2.05, 2.5],
+    'height': 1,
+    'rotation': 45,
+    # 'error': 0.02,
+    'outline': [
+        pm.Vector2(-1, -0.5),
+        pm.Vector2(-1, 0.5),
+        pm.Vector2(1, 0.5),
+        pm.Vector2(1, -0.5)
+    ],
+    'visible': True,
+    'visible_measurement': True
+}
+
+u5_info = {
+    'id': 'u5',
+    'position': [2.05, 2.5],
+    'height': 1,
+    'rotation': -45,
+    # 'error': 0.02,
+    'outline': [
+        pm.Vector2(-1, -0.5),
+        pm.Vector2(-1, 0.5),
+        pm.Vector2(1, 0.5),
+        pm.Vector2(1, -0.5)
+    ],
+    'visible': True,
+    'visible_measurement': True
+}
+
+
+u6_info = {
+    'id': 'u6',
+    'position': [2.05, -2.5],
+    'height': 1,
+    'rotation': -135,
+    # 'error': 0.02,
+    'outline': [
+        pm.Vector2(-1, -0.5),
+        pm.Vector2(-1, 0.5),
+        pm.Vector2(1, 0.5),
+        pm.Vector2(1, -0.5)
+    ],
+    'visible': True,
+    'visible_measurement': True
+}
+
+u7_info = {
+    'id': 'u7',
+    'position': [-2.05, -2.5],
+    'height': 1,
+    'rotation': 135,
+    # 'error': 0.02,
+    'outline': [
+        pm.Vector2(-1, -0.5),
+        pm.Vector2(-1, 0.5),
+        pm.Vector2(1, 0.5),
+        pm.Vector2(1, -0.5)
+    ],
+    'visible': True,
+    'visible_measurement': True
+}
+
 # g0_info = {
 #     'id': 'g0',
 #     'position': [0, 0],
@@ -256,7 +321,12 @@ sensors = {
     'u0': Ultrasonic(u0_info),
     'u1': Ultrasonic(u1_info),
     'u2': Ultrasonic(u2_info),
-    'u3': Ultrasonic(u3_info)
+    'u3': Ultrasonic(u3_info),
+    'u4': Ultrasonic(u4_info),
+    'u5': Ultrasonic(u5_info),
+    'u6': Ultrasonic(u6_info),
+    'u7': Ultrasonic(u7_info),
+    
     # 'g0': Gyroscope(g0_info),
     # 'c0': Compass(c0_info),
     # 'i0': Infrared(i0_info)
