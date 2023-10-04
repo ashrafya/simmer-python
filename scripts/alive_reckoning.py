@@ -86,6 +86,23 @@ cmd_sequence = ['w0-36', 'r0-90', 'w0-36', 'r0-90', 'w0-12', 'r0--90', 'w0-24', 
 
 ct = 0
 
+
+"""
+Rover description
+    ___________u0____________
+    |                       |
+    |                       |
+    |                       |
+    |                       |
+    u1|                       |u2
+    |                       |
+    |                       |
+    |                       |
+    |                       |
+    ___________u3____________    
+""" 
+
+
 def new_seq(sequence):
     final = []
     for x in sequence:
@@ -107,24 +124,16 @@ def check_stop(value):
         print("STOPPPPPPPPPPPPP")
         transmit('xx')
         return 1
-cmd_sequence = new_seq(cmd_sequence)
-print(cmd_sequence)
+
 
 def print_text(n:float, e:float, s:float, w:float):
     print(f"...... F:{n} ......")
     print(f"... L:{w} .. R:{e} ...")
     print(f"...... B:{s} ......")
-    
+
     
         
 while RUNNING:
-    
-    """
-    Rover description
-    
-    
-    
-    """
 
     if ct < len(cmd_sequence):
         transmit('u0')
