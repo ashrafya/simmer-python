@@ -89,18 +89,23 @@ ct = 0
 
 """
 Rover description
-    ___________u0____________
+    __u5_______u0________u4__
     |                       |
     |                       |
     |                       |
     |                       |
-    u1|                       |u2
+  u1|                       |u2
     |                       |
     |                       |
     |                       |
     |                       |
-    ___________u3____________    
+    __u6_______u3_________u7__    
 """ 
+
+commands  = {"forward": 'w0-1', 
+             "backward": 'w0--1',
+             "clockwise": 'r0-1',
+             "anticlockwise": 'r0--1'}
 
 
 def new_seq(sequence):
@@ -115,82 +120,65 @@ def new_seq(sequence):
     return final
         
 
-def check_stop(value):
-    print(value)
-    print(type(value))
-    print('above is the type of the value')
+def check_stop(value):    
+    if value <= 2: return 1 
+
+
+def print_text(directions:list):
+    """_summary_
+    takes a list of the four cardinal directions and outputs a vidual text represnetation
+    of the robot's state
+    Args:
+        directions (list): _description_
+        directions[0] = north/u0
+        directions[1] = east/u2
+        directions[2] = south/u3
+        directions[3] = west/u1
+        directions[4] = northeast/u1   
+        directions[5] = northwest/u1   
+        directions[6] = southwest/u1   
+        directions[7] = southeast/u1       
+    """
+    print(f"FR:{int(directions[5]):02d} .. F:{int(directions[0]):02d} .. FR:{int(directions[4]):02d}")
+    print(f"..................")
+    print(f"L:{int(directions[3]):02d} ............ R:{int(directions[1]):02d}")
+    print(f"..................")
+    print(f"BL:{int(directions[6]):02d} .. B:{int(directions[2]):02d} .. BR:{int(directions[7]):02d}")
+    print("_________________________________________")
     
-    if value <= 2:
-        print("STOPPPPPPPPPPPPP")
-        transmit('xx')
-        return 1
-
-
-def print_text(n:float, e:float, s:float, w:float):
-    print(f"...... F:{n} ......")
-    print(f"... L:{w} .. R:{e} ...")
-    print(f"...... B:{s} ......")
-
     
+def run_sensor(name:str, index:int, val:int, directions:list):
+    """_summary_
+    takes in the sensor name string and the index that the dirction the sensor reads in. The direction index
+    is insipired from the directions list. The funtion takes this information, reads from the sensor and 
+    stores the value in the directions list.
+    Args:
+        name (str): _description_
+        name of the sensor
+        index (int): _description_
+        the index of the direction this sensor reads in. The direction is inspired from the directions list. 
+        val (int):
+        value of sensor
+    """
+    transmit(str)
+    directions[index] = val
+    time.sleep(0.1)
+    return directions
+
+
         
 while RUNNING:
+    directions = [-1, -1, -1, -1, -1, -1, -1, -1] # u0, u2, u3, u1, u4, u5, u6. u7
 
     if ct < len(cmd_sequence):
-        transmit('u0')
-        time.sleep(0.1)
-        # print(f"Ultrasonic 0 reading: {round(responses[0], 3)}")
-        out = check_stop(responses[0])
-        if out:
-            break
-
-        transmit('u1')
-        time.sleep(0.1)
-        # print(f"Ultrasonic 1 reading: {round(responses[0], 3)}")
-        out = check_stop(responses[0])
-        if out:
-            break
-
-        transmit('u2')
-        time.sleep(0.1)
-        # print(f"Ultrasonic 2 reading: {round(responses[0], 3)}")
-        out = check_stop(responses[0])
-        if out:
-            break
-
-        transmit('u3')
-        time.sleep(0.1)
-        # print(f"Ultrasonic 3 reading: {round(responses[0], 3)}")
-        out = check_stop(responses[0])
-        if out:
-            break
-        
-        transmit('u4')
-        time.sleep(0.1)
-        # print(f"Ultrasonic 4 reading: {round(responses[0], 3)}")
-        out = check_stop(responses[0])
-        if out:
-            break
-        
-        transmit('u5')
-        time.sleep(0.1)
-        # print(f"Ultrasonic 3 reading: {round(responses[0], 3)}")
-        out = check_stop(responses[0])
-        if out:
-            break
-        
-        transmit('u6')
-        time.sleep(0.1)
-        # print(f"Ultrasonic 3 reading: {round(responses[0], 3)}")
-        out = check_stop(responses[0])
-        if out:
-            break
-        
-        transmit('u7')
-        time.sleep(0.1)
-        # print(f"Ultrasonic 3 reading: {round(responses[0], 3)}")
-        out = check_stop(responses[0])
-        if out:
-            break
+        directions = run_sensor('u0', 0, responses[0], directions)
+        directions = run_sensor('u1', 3, responses[0], directions)
+        directions = run_sensor('u2', 1, responses[0], directions)
+        directions = run_sensor('u3', 2, responses[0], directions)
+        directions = run_sensor('u4', 4, responses[0], directions)
+        directions = run_sensor('u5', 5, responses[0], directions)
+        directions = run_sensor('u6', 6, responses[0], directions)
+        directions = run_sensor('u7', 7, responses[0], directions)
         
         transmit(cmd_sequence[ct])
         time.sleep(0.1)
@@ -202,3 +190,4 @@ while RUNNING:
     else:
         RUNNING = False
         print("Sequence complete!")
+
