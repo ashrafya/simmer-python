@@ -86,6 +86,18 @@ cmd_sequence = ['w0-36', 'r0-90', 'w0-36', 'r0-90', 'w0-12', 'r0--90', 'w0-24', 
 
 ct = 0
 
+def new_seq(sequence):
+    final = []
+    for x in sequence:
+        if 'w' not in x: 
+            final.append(x)
+            continue
+        x = x.split('-')
+        for i in range(int(x[1])):
+            final.append('w0-1')
+    return final
+        
+
 def check_stop(value):
     print(value)
     print(type(value))
@@ -95,62 +107,78 @@ def check_stop(value):
         print("STOPPPPPPPPPPPPP")
         transmit('xx')
         return 1
+cmd_sequence = new_seq(cmd_sequence)
+print(cmd_sequence)
+
+def print_text(n:float, e:float, s:float, w:float):
+    print(f"...... F:{n} ......")
+    print(f"... L:{w} .. R:{e} ...")
+    print(f"...... B:{s} ......")
+    
+    
         
 while RUNNING:
+    
+    """
+    Rover description
+    
+    
+    
+    """
 
     if ct < len(cmd_sequence):
         transmit('u0')
         time.sleep(0.1)
-        print(f"Ultrasonic 0 reading: {round(responses[0], 3)}")
+        # print(f"Ultrasonic 0 reading: {round(responses[0], 3)}")
         out = check_stop(responses[0])
         if out:
             break
 
         transmit('u1')
         time.sleep(0.1)
-        print(f"Ultrasonic 1 reading: {round(responses[0], 3)}")
+        # print(f"Ultrasonic 1 reading: {round(responses[0], 3)}")
         out = check_stop(responses[0])
         if out:
             break
 
         transmit('u2')
         time.sleep(0.1)
-        print(f"Ultrasonic 2 reading: {round(responses[0], 3)}")
+        # print(f"Ultrasonic 2 reading: {round(responses[0], 3)}")
         out = check_stop(responses[0])
         if out:
             break
 
         transmit('u3')
         time.sleep(0.1)
-        print(f"Ultrasonic 3 reading: {round(responses[0], 3)}")
+        # print(f"Ultrasonic 3 reading: {round(responses[0], 3)}")
         out = check_stop(responses[0])
         if out:
             break
         
         transmit('u4')
         time.sleep(0.1)
-        print(f"Ultrasonic 4 reading: {round(responses[0], 3)}")
+        # print(f"Ultrasonic 4 reading: {round(responses[0], 3)}")
         out = check_stop(responses[0])
         if out:
             break
         
         transmit('u5')
         time.sleep(0.1)
-        print(f"Ultrasonic 3 reading: {round(responses[0], 3)}")
+        # print(f"Ultrasonic 3 reading: {round(responses[0], 3)}")
         out = check_stop(responses[0])
         if out:
             break
         
         transmit('u6')
         time.sleep(0.1)
-        print(f"Ultrasonic 3 reading: {round(responses[0], 3)}")
+        # print(f"Ultrasonic 3 reading: {round(responses[0], 3)}")
         out = check_stop(responses[0])
         if out:
             break
         
         transmit('u7')
         time.sleep(0.1)
-        print(f"Ultrasonic 3 reading: {round(responses[0], 3)}")
+        # print(f"Ultrasonic 3 reading: {round(responses[0], 3)}")
         out = check_stop(responses[0])
         if out:
             break
