@@ -83,8 +83,18 @@ Thread(target = receive, daemon = True).start()
 # Run the sequence of commands
 RUNNING = True
 cmd_sequence = ['w0-36', 'r0-90', 'w0-36', 'r0-90', 'w0-12', 'r0--90', 'w0-24', 'r0--90', 'w0-6', 'r0-720']
-
 ct = 0
+commands  = {"forward": 'w0-1', 
+             "backward": 'w0--1',
+             "clockwise": 'r0-1',
+             "clockwise-3": 'r0-3',
+             "clockwise-6": 'r0-6',
+             "clockwise-10": 'r0-10',
+             "anticlockwise": 'r0--1',
+             "anticlockwise-3": 'r0--3',
+             "anticlockwise-6": 'r0--6',
+             "anticlockwise-10": 'r0--10',}
+
 
 
 """
@@ -102,10 +112,7 @@ Rover description
     __u6_______u3_________u7__    
 """ 
 
-commands  = {"forward": 'w0-1', 
-             "backward": 'w0--1',
-             "clockwise": 'r0-1',
-             "anticlockwise": 'r0--1'}
+
 
 
 def new_seq(sequence):
@@ -159,16 +166,88 @@ def run_sensor(name:str, index:int, val:int, directions:list):
         the index of the direction this sensor reads in. The direction is inspired from the directions list. 
         val (int):
         value of sensor
+    Returns:
+        _type_: _description_
+        returns updated directions list
     """
-    transmit(str)
-    directions[index] = val
+    transmit(name)
     time.sleep(0.1)
+    directions[index] = responses[0]
     return directions
 
 
+def update_directions(directions:list):
+    """
+    Args:
+        directions (list): _description_
+    """
+    directions = run_sensor('u0', 0, responses[0], directions)
+    directions = run_sensor('u1', 3, responses[0], directions)
+    directions = run_sensor('u2', 1, responses[0], directions)
+    directions = run_sensor('u3', 2, responses[0], directions)
+    directions = run_sensor('u4', 4, responses[0], directions)
+    directions = run_sensor('u5', 5, responses[0], directions)
+    directions = run_sensor('u6', 6, responses[0], directions)
+    directions = run_sensor('u7', 7, responses[0], directions)
+    return directions
+    
+
+
+def decision_making(directions:list):
+    """_summary_
+    Takes in the directions list and returns a command that will turn the robot in the correct direction
+
+    Args:
+        directions (list): _description_
+
+    Returns:
+        _type_: _description_
+        cmd: the final command to the robot
+    """
+    calc = False  # to calculate if we robot has hit threshold to recalculate trajectory
+    line = True   # flag to see if the robot is on good trajectory, to avoid race conditions
+    cardinal = directions[:4]
+    
+    for el in directions:
+        if el < 3: calc = True
+        elif cardinal.index(max(cardinal)) !=0: calc = True
+
+    if calc and line:
+        # rotate until front sensor has max value
+        maxdir = cardinal.index(max(cardinal))
+        while maxdir != 0: # rotate until it is
+            print(f"mixdir is {maxdir}")
+            transmit(commands['clockwise-10'])
+            time.sleep(0.1)
+            print_text(directions)
+            
+            directions = update_directions(directions)
+            maxdir = directions.index(max(directions))
+            
+def straight_line(directions):
+    """
+    makes the robot go in a straight line
+    """
+    
+            
+            
         
 while RUNNING:
     directions = [-1, -1, -1, -1, -1, -1, -1, -1] # u0, u2, u3, u1, u4, u5, u6. u7
+    """
+    Rover description
+        __u5_______u0________u4__
+        |                       |
+        |                       |
+        |                       |
+        |                       |
+    u1|                       |u2
+        |                       |
+        |                       |
+        |                       |
+        |                       |
+        __u6_______u3_________u7__    
+    """ 
 
     if ct < len(cmd_sequence):
         directions = run_sensor('u0', 0, responses[0], directions)
@@ -180,11 +259,14 @@ while RUNNING:
         directions = run_sensor('u6', 6, responses[0], directions)
         directions = run_sensor('u7', 7, responses[0], directions)
         
-        transmit(cmd_sequence[ct])
-        time.sleep(0.1)
+        print_text(directions)
+        decision_making(directions)
+        
+        # transmit(cmd_sequence[ct])
+        # time.sleep(0.1)
 
-        if responses[0] == math.inf:
-            ct += 1
+        # if responses[0] == math.inf:
+        #     ct += 1
 
         time.sleep(0.1)
     else:

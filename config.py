@@ -116,7 +116,7 @@ w0_info = {
     'position': [0, 0],
     'rotation': 0,
     'visible': False,
-    'velocity': [0, 6],
+    'velocity': [0, 3],
     'ang_velocity': 0,
     'motors': [motors['m0'], motors['m1']],
     'motor_direction': [1, 1],
@@ -158,7 +158,7 @@ drives = {
 # Sensors
 u0_info = {
     'id': 'u0',
-    'position': [0, 2.5],
+    'position': [0, 3.5],
     'height': 1,
     'rotation': 0,
     # 'error': 0.02,
@@ -174,7 +174,7 @@ u0_info = {
 
 u1_info = {
     'id': 'u1',
-    'position': [-2.5, 0],
+    'position': [2.5, 0],
     'height': 1,
     'rotation': -90,
     # 'error': 0.02,
@@ -206,7 +206,7 @@ u2_info = {
 
 u3_info = {
     'id': 'u3',
-    'position': [0, -2.5],
+    'position': [0, -3.5],
     'height': 1,
     'rotation': 180,
     # 'error': 0.02,
