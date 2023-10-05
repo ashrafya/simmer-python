@@ -84,16 +84,24 @@ Thread(target = receive, daemon = True).start()
 RUNNING = True
 cmd_sequence = ['w0-36', 'r0-90', 'w0-36', 'r0-90', 'w0-12', 'r0--90', 'w0-24', 'r0--90', 'w0-6', 'r0-720']
 ct = 0
-commands  = {"forward": 'w0-1', 
+commands  = {"forward": 'w0-1',
+             "forward-4": 'w0-4',
+             "forward-10": 'w0-10',
+             "forward-15": 'w0-15',
+             "forward-40": 'w0-40', 
              "backward": 'w0--1',
              "clockwise": 'r0-1',
              "clockwise-3": 'r0-3',
              "clockwise-6": 'r0-6',
              "clockwise-10": 'r0-10',
+             "clockwise-90": 'r0-90',
              "anticlockwise": 'r0--1',
              "anticlockwise-3": 'r0--3',
              "anticlockwise-6": 'r0--6',
-             "anticlockwise-10": 'r0--10',}
+             "anticlockwise-10": 'r0--10',
+             "anticlockwise-90": 'r0--90', 
+             "STOP": 'xx'}
+MAX_ALLEY_DIFFERENTIAL = 6
 
 
 
@@ -224,11 +232,99 @@ def decision_making(directions:list):
             directions = update_directions(directions)
             maxdir = directions.index(max(directions))
             
+def front_max(directions):
+    """ 
+    makes the front of the robot be the maximum direction
+    """
+    cardinal = directions[:4]
+    maxdir = cardinal.index(max(cardinal))
+    while maxdir != 0: # rotate until it is
+        print(f"maxdir is {maxdir}")
+        transmit(commands['clockwise-10'])
+        time.sleep(0.1)
+        print_text(directions)
+        
+        directions = update_directions(directions)
+        maxdir = directions.index(max(directions))
+    
+            
+def rotation_adjust(dirs):
+    """ 
+    adjusts the robot if it is in an alley and rotates it
+           |                |
+           |                |
+    dirs[2]|                |dirs[1]
+           |                |
+           |                |
+    """
+    rotated = False
+    hval = dirs[1] - dirs[2]
+    if abs(hval) < MAX_ALLEY_DIFFERENTIAL:  # this means we are in an alley
+        if abs(hval) > MAX_ALLEY_DIFFERENTIAL/3: # the robot is too close to a wall
+            rotated = True
+            if hval > 0:
+                transmit(commands['clockwise-10'])
+            elif hval < 0:
+                transmit(commands['anticlockwise-10'])
+    return rotated
+                         
+    
+            
 def straight_line(directions):
     """
     makes the robot go in a straight line
     """
-    
+    run = True
+    while run:
+        transmit(commands['forward-40'])
+        u0 = check_stop(directions[0])
+        if u0 == 1:
+            transmit(commands['STOP'])
+            break
+        u1 = check_stop(directions[3])
+        if u1 == 1:
+            transmit(commands['STOP'])
+            break
+        u2 = check_stop(directions[1])
+        if u2 == 1:
+            transmit(commands['STOP'])
+            break
+        u3 = check_stop(directions[2])
+        if u3 == 1:
+            transmit(commands['STOP'])
+            break
+        u4 = check_stop(directions[4])
+        if u4 == 1:
+            transmit(commands['STOP'])
+            breakpoint
+        u5 = check_stop(directions[5])
+        if u5 == 1:
+            transmit(commands['STOP'])
+            break
+        u6 = check_stop(directions[6])
+        if u6 == 1:
+            transmit(commands['STOP'])
+            break
+        u7 = check_stop(directions[7])
+        if u4 == 7:
+            transmit(commands['STOP'])
+            break
+            
+            
+        
+        
+        
+    directions = run_sensor('u0', 0, responses[0], directions)
+    directions = run_sensor('u1', 3, responses[0], directions)
+    directions = run_sensor('u2', 1, responses[0], directions)
+    directions = run_sensor('u3', 2, responses[0], directions)
+    directions = run_sensor('u4', 4, responses[0], directions)
+    directions = run_sensor('u5', 5, responses[0], directions)
+    directions = run_sensor('u6', 6, responses[0], directions)
+    directions = run_sensor('u7', 7, responses[0], directions)
+        
+        
+        
             
             
         
@@ -241,7 +337,7 @@ while RUNNING:
         |                       |
         |                       |
         |                       |
-    u1|                       |u2
+      u1|                       |u2
         |                       |
         |                       |
         |                       |
@@ -260,7 +356,7 @@ while RUNNING:
         directions = run_sensor('u7', 7, responses[0], directions)
         
         print_text(directions)
-        decision_making(directions)
+        # decision_making(directions)
         
         # transmit(cmd_sequence[ct])
         # time.sleep(0.1)
