@@ -85,20 +85,30 @@ RUNNING = True
 cmd_sequence = ['w0-36', 'r0-90', 'w0-36', 'r0-90', 'w0-12', 'r0--90', 'w0-24', 'r0--90', 'w0-6', 'r0-720']
 ct = 0
 commands  = {"forward": 'w0-1',
+             "forward-2": 'w0-2',
              "forward-4": 'w0-4',
              "forward-10": 'w0-10',
              "forward-15": 'w0-15',
              "forward-40": 'w0-40', 
              "backward": 'w0--1',
+             "backward-2": 'w0--2',
+             "backward-3": 'w0--3',
+             "backward-10": 'w0--10',
+             "backward-25": 'w0--25',
              "clockwise": 'r0-1',
              "clockwise-3": 'r0-3',
              "clockwise-6": 'r0-6',
              "clockwise-10": 'r0-10',
+             "clockwise-25": 'r0-25',
+             "clockwise-45": 'r0-45',
              "clockwise-90": 'r0-90',
+             "clockwise-180": 'r0-180',
              "anticlockwise": 'r0--1',
              "anticlockwise-3": 'r0--3',
              "anticlockwise-6": 'r0--6',
              "anticlockwise-10": 'r0--10',
+             "anticlockwise-25": 'r0--25',
+             "anticlockwise-45": 'r0--45', 
              "anticlockwise-90": 'r0--90', 
              "STOP": 'xx'}
 MAX_ALLEY_DIFFERENTIAL = 6
@@ -121,8 +131,6 @@ Rover description
 """ 
 
 
-
-
 def new_seq(sequence):
     final = []
     for x in sequence:
@@ -136,7 +144,7 @@ def new_seq(sequence):
         
 
 def check_stop(value):    
-    if value <= 2: return 1 
+    if value <= 3.5: return 1 
 
 
 def print_text(directions:list):
@@ -154,15 +162,15 @@ def print_text(directions:list):
         directions[6] = southwest/u1   
         directions[7] = southeast/u1       
     """
-    print(f"FR:{int(directions[5]):02d} .. F:{int(directions[0]):02d} .. FR:{int(directions[4]):02d}")
+    print(f"FR:{float(directions[5]):f} .. F:{float(directions[0]):02f} .. FR:{float(directions[4]):02f}")
     print(f"..................")
-    print(f"L:{int(directions[3]):02d} ............ R:{int(directions[1]):02d}")
+    print(f"L:{float(directions[3]):02f} ............ R:{float(directions[1]):02f}")
     print(f"..................")
-    print(f"BL:{int(directions[6]):02d} .. B:{int(directions[2]):02d} .. BR:{int(directions[7]):02d}")
+    print(f"BL:{float(directions[6]):02f} .. B:{float(directions[2]):02f} .. BR:{float(directions[7]):02f}")
     print("_________________________________________")
     
     
-def run_sensor(name:str, index:int, val:int, directions:list):
+def run_sensor(name:str, index:int, directions:list):
     """_summary_
     takes in the sensor name string and the index that the dirction the sensor reads in. The direction index
     is insipired from the directions list. The funtion takes this information, reads from the sensor and 
@@ -178,9 +186,11 @@ def run_sensor(name:str, index:int, val:int, directions:list):
         _type_: _description_
         returns updated directions list
     """
+    # print("SENSNNSONONRONONONONCHECKKCKCKCK")
     transmit(name)
     time.sleep(0.1)
-    directions[index] = responses[0]
+    directions[index] = round(responses[0])
+    # print(responses[0])
     return directions
 
 
@@ -189,14 +199,24 @@ def update_directions(directions:list):
     Args:
         directions (list): _description_
     """
-    directions = run_sensor('u0', 0, responses[0], directions)
-    directions = run_sensor('u1', 3, responses[0], directions)
-    directions = run_sensor('u2', 1, responses[0], directions)
-    directions = run_sensor('u3', 2, responses[0], directions)
-    directions = run_sensor('u4', 4, responses[0], directions)
-    directions = run_sensor('u5', 5, responses[0], directions)
-    directions = run_sensor('u6', 6, responses[0], directions)
-    directions = run_sensor('u7', 7, responses[0], directions)
+    directions = run_sensor('u0', 0, directions)
+    time.sleep(0.1)
+    directions = run_sensor('u1', 3, directions)
+    time.sleep(0.1)
+    directions = run_sensor('u2', 1, directions)
+    time.sleep(0.1)
+    directions = run_sensor('u3', 2, directions)
+    time.sleep(0.1)
+    directions = run_sensor('u4', 4, directions)
+    time.sleep(0.1)
+    directions = run_sensor('u5', 5, directions)
+    time.sleep(0.1)
+    directions = run_sensor('u6', 6, directions)
+    time.sleep(0.1)
+    directions = run_sensor('u7', 7, directions)
+    time.sleep(0.1)
+    print_text(directions)
+    
     return directions
     
 
@@ -227,7 +247,7 @@ def decision_making(directions:list):
             print(f"mixdir is {maxdir}")
             transmit(commands['clockwise-10'])
             time.sleep(0.1)
-            print_text(directions)
+            # print_text(directions)
             
             directions = update_directions(directions)
             maxdir = directions.index(max(directions))
@@ -236,17 +256,65 @@ def front_max(directions):
     """ 
     makes the front of the robot be the maximum direction
     """
+    count = 0
     cardinal = directions[:4]
     maxdir = cardinal.index(max(cardinal))
+    clock, front, lateral_check = True, True, True
     while maxdir != 0: # rotate until it is
+        if directions[0] > 5:
+            break
         print(f"maxdir is {maxdir}")
-        transmit(commands['clockwise-10'])
-        time.sleep(0.1)
-        print_text(directions)
+        if clock:
+            print('rotatinggggggg CLOCK')
+            transmit(commands['clockwise-25'])
+            time.sleep(0.1)
+        else: 
+            print('rotatinggggggg ANTICLOCK')
+            
+            transmit(commands['anticlockwise-25'])
+            time.sleep(0.1)        
+        new_dirs = update_directions(directions)
+        print(new_dirs)
         
-        directions = update_directions(directions)
+        if new_dirs == directions: 
+            clock = not clock
+            count += 1
+            lateral_check = True
+            
+        if count == 2 and lateral_check:
+            count = 0
+            lateral_check = False
+            if front:
+                print("moving forward")
+                transmit(commands['forward-2'])
+                time.sleep(0.1)
+            else:
+                print("moving backward")
+                print('BAKCWARD FRONT_MAX')
+                transmit(commands['backward-2'])
+                time.sleep(0.1)
+            front = not front
+                
+            
+        directions = new_dirs
+
         maxdir = directions.index(max(directions))
-    
+    return directions
+ 
+def if_go_back(dirs, new_dirs):
+    """ 
+    checks if the robot needs to go back
+    """
+    went_back = False
+    print(dirs)
+    print(new_dirs)
+    if dirs == new_dirs:
+        went_back = True
+        print('BAKCWARD IF_GO_BACK')
+        transmit(commands['backward-3'])
+        time.sleep(0.1)
+        return update_directions(new_dirs), went_back 
+    return new_dirs, went_back      
             
 def rotation_adjust(dirs):
     """ 
@@ -257,71 +325,96 @@ def rotation_adjust(dirs):
            |                |
            |                |
     """
-    rotated = False
+    rotated = False   # potentiall use the flag
     hval = dirs[1] - dirs[2]
+    new_dirs = []
     if abs(hval) < MAX_ALLEY_DIFFERENTIAL:  # this means we are in an alley
         if abs(hval) > MAX_ALLEY_DIFFERENTIAL/3: # the robot is too close to a wall
-            rotated = True
             if hval > 0:
                 transmit(commands['clockwise-10'])
+                time.sleep(0.1)
+                new_dirs = update_directions(dirs)
             elif hval < 0:
                 transmit(commands['anticlockwise-10'])
-    return rotated
-                         
+                time.sleep(0.1)
+                new_dirs = update_directions(dirs)
+    print("GO BACK FROM ROTATION ADJUST")
+    return if_go_back(dirs, new_dirs)
+
+        
     
             
 def straight_line(directions):
     """
     makes the robot go in a straight line
     """
-    run = True
-    while run:
-        transmit(commands['forward-40'])
+    count = 0
+    while True:
+        transmit(commands['forward'])
+        print('straight line move')
+        time.sleep(0.2)
         u0 = check_stop(directions[0])
+        print(f'the value of u0 is {u0}')
         if u0 == 1:
+            print("returning from here U0")
             transmit(commands['STOP'])
-            break
+            time.sleep(0.1)        
+            return directions
         u1 = check_stop(directions[3])
+        print(f'the value of u1 is {u1}')
         if u1 == 1:
+            print("returning from here U1")
             transmit(commands['STOP'])
-            break
+            time.sleep(0.1)
+            return directions
         u2 = check_stop(directions[1])
         if u2 == 1:
+            print("returning from here U2")
             transmit(commands['STOP'])
-            break
+            time.sleep(0.1)
+            return directions
         u3 = check_stop(directions[2])
         if u3 == 1:
+            print("returning from here U3")
             transmit(commands['STOP'])
-            break
+            time.sleep(0.1)
+            return directions
         u4 = check_stop(directions[4])
         if u4 == 1:
+            print("returning from here U4")
             transmit(commands['STOP'])
-            breakpoint
+            time.sleep(0.1)
+            return directions
         u5 = check_stop(directions[5])
         if u5 == 1:
+            print("returning from here U5")
             transmit(commands['STOP'])
-            break
+            time.sleep(0.1)
+            return directions
         u6 = check_stop(directions[6])
         if u6 == 1:
+            print("returning from here U6")
             transmit(commands['STOP'])
-            break
+            time.sleep(0.1)
+            return directions
         u7 = check_stop(directions[7])
-        if u4 == 7:
+        if u7 == 7:
+            print("returning from here U7")
             transmit(commands['STOP'])
+            time.sleep(0.1)
+            return directions
+        
+        print("COOOMMMMMIIIINNNBGGGGGG DOOOOOOWWWNNN")
+        count += 1
+        print(count)
+        if count > 20:
             break
-            
-            
         
         
-        
-    directions = run_sensor('u0', 0, responses[0], directions)
-    directions = run_sensor('u1', 3, responses[0], directions)
-    directions = run_sensor('u2', 1, responses[0], directions)
-    directions = run_sensor('u3', 2, responses[0], directions)
-    directions = run_sensor('u4', 4, responses[0], directions)
-    directions = run_sensor('u5', 5, responses[0], directions)
-    directions = run_sensor('u6', 6, responses[0], directions)
-    directions = run_sensor('u7', 7, responses[0], directions)
+        directions, flag = if_go_back(directions, update_directions(directions.copy()))
+        if flag:
+            print('while loop broken')
+            break
         
         
         
@@ -345,27 +438,12 @@ while RUNNING:
         __u6_______u3_________u7__    
     """ 
 
-    if ct < len(cmd_sequence):
-        directions = run_sensor('u0', 0, responses[0], directions)
-        directions = run_sensor('u1', 3, responses[0], directions)
-        directions = run_sensor('u2', 1, responses[0], directions)
-        directions = run_sensor('u3', 2, responses[0], directions)
-        directions = run_sensor('u4', 4, responses[0], directions)
-        directions = run_sensor('u5', 5, responses[0], directions)
-        directions = run_sensor('u6', 6, responses[0], directions)
-        directions = run_sensor('u7', 7, responses[0], directions)
+    directions = update_directions(directions.copy())
         
-        print_text(directions)
-        # decision_making(directions)
-        
-        # transmit(cmd_sequence[ct])
-        # time.sleep(0.1)
-
-        # if responses[0] == math.inf:
-        #     ct += 1
-
-        time.sleep(0.1)
-    else:
-        RUNNING = False
-        print("Sequence complete!")
+    print_text(directions.copy())
+    directions = straight_line(directions.copy())
+    print('going into front_max')
+    print(directions)
+    directions = front_max(directions.copy())
+    time.sleep(0.1)
 
