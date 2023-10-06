@@ -254,6 +254,7 @@ def decision_making(directions:list):
             
 def front_max(directions):
     """ 
+    ## need to take advantage of all 8 sensors to make this work well
     makes the front of the robot be the maximum direction
     """
     count = 0
