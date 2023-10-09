@@ -29,6 +29,8 @@ from threading import Thread
 import _thread
 from datetime import datetime
 
+
+
 def transmit(data):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
@@ -112,6 +114,7 @@ commands  = {"forward": 'w0-1',
              "anticlockwise-90": 'r0--90', 
              "STOP": 'xx'}
 MAX_ALLEY_DIFFERENTIAL = 6
+MAX_DIR = -1
 
 
 
@@ -189,7 +192,10 @@ def run_sensor(name:str, index:int, directions:list):
     # print("SENSNNSONONRONONONONCHECKKCKCKCK")
     transmit(name)
     time.sleep(0.1)
-    directions[index] = round(responses[0])
+    try:
+        directions[index] = round(responses[0])
+    finally:
+        pass
     # print(responses[0])
     return directions
 
@@ -215,7 +221,7 @@ def update_directions(directions:list):
     time.sleep(0.1)
     directions = run_sensor('u7', 7, directions)
     time.sleep(0.1)
-    print_text(directions)
+    # print_text(directions)
     
     return directions
     
@@ -244,7 +250,7 @@ def decision_making(directions:list):
         # rotate until front sensor has max value
         maxdir = cardinal.index(max(cardinal))
         while maxdir != 0: # rotate until it is
-            print(f"mixdir is {maxdir}")
+            # print(f"mixdir is {maxdir}")
             transmit(commands['clockwise-10'])
             time.sleep(0.1)
             # print_text(directions)
@@ -262,39 +268,44 @@ def front_max(directions):
     maxdir = cardinal.index(max(cardinal))
     clock, front, lateral_check = True, True, True
     while maxdir != 0: # rotate until it is
-        if directions[0] > 5:
+        if directions[0] > 3:
             break
-        print(f"maxdir is {maxdir}")
-        if clock:
-            print('rotatinggggggg CLOCK')
-            transmit(commands['clockwise-25'])
-            time.sleep(0.1)
-        else: 
-            print('rotatinggggggg ANTICLOCK')
-            
-            transmit(commands['anticlockwise-25'])
-            time.sleep(0.1)        
-        new_dirs = update_directions(directions)
-        print(new_dirs)
-        
-        if new_dirs == directions: 
-            clock = not clock
-            count += 1
-            lateral_check = True
-            
-        if count == 2 and lateral_check:
-            count = 0
-            lateral_check = False
-            if front:
-                print("moving forward")
-                transmit(commands['forward-2'])
+        MAX_DIR = max(cardinal)
+        while MAX_DIR != -1:
+            # need to rotate ntil MAX_DIR is in front
+            # print(f"maxdir is {maxdir}")
+            if clock:
+                # print('rotatinggggggg CLOCK')
+                transmit(commands['clockwise-25'])
                 time.sleep(0.1)
-            else:
-                print("moving backward")
-                print('BAKCWARD FRONT_MAX')
-                transmit(commands['backward-2'])
-                time.sleep(0.1)
-            front = not front
+            else: 
+                # print('rotatinggggggg ANTICLOCK')
+                
+                transmit(commands['anticlockwise-25'])
+                time.sleep(0.1)        
+            new_dirs = update_directions(directions.copy())
+            # print(new_dirs)
+            
+            if new_dirs == directions: 
+                clock = not clock
+                count += 1
+                lateral_check = True
+            if directions[0] == MAX_DIR:
+                MAX_DIR = -1
+            
+            if count == 2 and lateral_check:
+                count = 0
+                lateral_check = False
+                if front:
+                    # print("moving forward")
+                    transmit(commands['forward-2'])
+                    time.sleep(0.1)
+                else:
+                    # print("moving backward")
+                    # print('BAKCWARD FRONT_MAX')
+                    transmit(commands['backward-2'])
+                    time.sleep(0.1)
+                front = not front
                 
             
         directions = new_dirs
@@ -307,11 +318,11 @@ def if_go_back(dirs, new_dirs):
     checks if the robot needs to go back
     """
     went_back = False
-    print(dirs)
-    print(new_dirs)
+    # print(dirs)
+    # print(new_dirs)
     if dirs == new_dirs:
         went_back = True
-        print('BAKCWARD IF_GO_BACK')
+        # print('BAKCWARD IF_GO_BACK')
         transmit(commands['backward-3'])
         time.sleep(0.1)
         return update_directions(new_dirs), went_back 
@@ -339,7 +350,7 @@ def rotation_adjust(dirs):
                 transmit(commands['anticlockwise-10'])
                 time.sleep(0.1)
                 new_dirs = update_directions(dirs)
-    print("GO BACK FROM ROTATION ADJUST")
+    # print("GO BACK FROM ROTATION ADJUST")
     return if_go_back(dirs, new_dirs)
 
         
@@ -352,69 +363,69 @@ def straight_line(directions):
     count = 0
     while True:
         transmit(commands['forward'])
-        print('straight line move')
+        # print('straight line move')
         time.sleep(0.2)
         u0 = check_stop(directions[0])
-        print(f'the value of u0 is {u0}')
+        # print(f'the value of u0 is {u0}')
         if u0 == 1:
-            print("returning from here U0")
+            # print("returning from here U0")
             transmit(commands['STOP'])
             time.sleep(0.1)        
             return directions
         u1 = check_stop(directions[3])
-        print(f'the value of u1 is {u1}')
+        # print(f'the value of u1 is {u1}')
         if u1 == 1:
-            print("returning from here U1")
+            # print("returning from here U1")
             transmit(commands['STOP'])
             time.sleep(0.1)
             return directions
         u2 = check_stop(directions[1])
         if u2 == 1:
-            print("returning from here U2")
+            # print("returning from here U2")
             transmit(commands['STOP'])
             time.sleep(0.1)
             return directions
         u3 = check_stop(directions[2])
         if u3 == 1:
-            print("returning from here U3")
+            # print("returning from here U3")
             transmit(commands['STOP'])
             time.sleep(0.1)
             return directions
         u4 = check_stop(directions[4])
         if u4 == 1:
-            print("returning from here U4")
+            # print("returning from here U4")
             transmit(commands['STOP'])
             time.sleep(0.1)
             return directions
         u5 = check_stop(directions[5])
         if u5 == 1:
-            print("returning from here U5")
+            # print("returning from here U5")
             transmit(commands['STOP'])
             time.sleep(0.1)
             return directions
         u6 = check_stop(directions[6])
         if u6 == 1:
-            print("returning from here U6")
+            # print("returning from here U6")
             transmit(commands['STOP'])
             time.sleep(0.1)
             return directions
         u7 = check_stop(directions[7])
         if u7 == 7:
-            print("returning from here U7")
+            # print("returning from here U7")
             transmit(commands['STOP'])
             time.sleep(0.1)
             return directions
         
-        print("COOOMMMMMIIIINNNBGGGGGG DOOOOOOWWWNNN")
+        # print("COOOMMMMMIIIINNNBGGGGGG DOOOOOOWWWNNN")
         count += 1
-        print(count)
+        # print(count)
         if count > 20:
             break
         
         
         directions, flag = if_go_back(directions, update_directions(directions.copy()))
         if flag:
-            print('while loop broken')
+            # print('while loop broken')
             break
         
         
@@ -442,9 +453,9 @@ while RUNNING:
     directions = update_directions(directions.copy())
         
     print_text(directions.copy())
-    directions = straight_line(directions.copy())
-    print('going into front_max')
-    print(directions)
-    directions = front_max(directions.copy())
+    # directions = straight_line(directions.copy())
+    # print('going into front_max')
+    # print(directions)
+    # directions = front_max(directions.copy())
     time.sleep(0.1)
 
