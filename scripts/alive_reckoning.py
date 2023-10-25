@@ -31,6 +31,7 @@ from datetime import datetime
 
 
 
+
 def transmit(data):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
@@ -133,17 +134,6 @@ Rover description
     __u6_______u3_________u7__    
 """ 
 
-
-def new_seq(sequence):
-    final = []
-    for x in sequence:
-        if 'w' not in x: 
-            final.append(x)
-            continue
-        x = x.split('-')
-        for i in range(int(x[1])):
-            final.append('w0-1')
-    return final
         
 
 def check_stop(value):    
@@ -227,36 +217,7 @@ def update_directions(directions:list):
     
 
 
-def decision_making(directions:list):
-    """_summary_
-    Takes in the directions list and returns a command that will turn the robot in the correct direction
 
-    Args:
-        directions (list): _description_
-
-    Returns:
-        _type_: _description_
-        cmd: the final command to the robot
-    """
-    calc = False  # to calculate if we robot has hit threshold to recalculate trajectory
-    line = True   # flag to see if the robot is on good trajectory, to avoid race conditions
-    cardinal = directions[:4]
-    
-    for el in directions:
-        if el < 3: calc = True
-        elif cardinal.index(max(cardinal)) !=0: calc = True
-
-    if calc and line:
-        # rotate until front sensor has max value
-        maxdir = cardinal.index(max(cardinal))
-        while maxdir != 0: # rotate until it is
-            # print(f"mixdir is {maxdir}")
-            transmit(commands['clockwise-10'])
-            time.sleep(0.1)
-            # print_text(directions)
-            
-            directions = update_directions(directions)
-            maxdir = directions.index(max(directions))
             
 def front_max(directions):
     """ 
@@ -328,33 +289,6 @@ def if_go_back(dirs, new_dirs):
         return update_directions(new_dirs), went_back 
     return new_dirs, went_back      
             
-def rotation_adjust(dirs):
-    """ 
-    adjusts the robot if it is in an alley and rotates it
-           |                |
-           |                |
-    dirs[2]|                |dirs[1]
-           |                |
-           |                |
-    """
-    rotated = False   # potentiall use the flag
-    hval = dirs[1] - dirs[2]
-    new_dirs = []
-    if abs(hval) < MAX_ALLEY_DIFFERENTIAL:  # this means we are in an alley
-        if abs(hval) > MAX_ALLEY_DIFFERENTIAL/3: # the robot is too close to a wall
-            if hval > 0:
-                transmit(commands['clockwise-10'])
-                time.sleep(0.1)
-                new_dirs = update_directions(dirs)
-            elif hval < 0:
-                transmit(commands['anticlockwise-10'])
-                time.sleep(0.1)
-                new_dirs = update_directions(dirs)
-    # print("GO BACK FROM ROTATION ADJUST")
-    return if_go_back(dirs, new_dirs)
-
-        
-    
             
 def straight_line(directions):
     """
