@@ -6,6 +6,16 @@ import matplotlib as mpl
 import numpy as np
 from scipy.ndimage import gaussian_filter
 from scipy.stats import norm
+from alive_reckoning import transmit, receive, bytes_to_list, HOST, PORT_TX, PORT_RX
+from alive_reckoning import responses, time_rx
+
+import socket
+import struct
+import time
+from threading import Thread
+import _thread
+from datetime import datetime
+
 
 EXTEND_AREA = 10.0  # [m] grid map extended length
 SIM_TIME = 50.0  # simulation time [s]
@@ -25,9 +35,22 @@ MAX_Y = 25.0
 NOISE_RANGE = 2.0  # [m] 1σ range noise parameter
 NOISE_SPEED = 0.5  # [m/s] 1σ speed noise parameter
 
+# What the map looks like
+MAP = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1], # 0 means it is okay to go there, clear
+       [1, 0, 0, 0, 0, 1, 0, 1, 0, 1], # 1 means that there is a wall or an obstacle
+       [1, 0, 0, 1, 0, 0, 0, 0, 0, 1], 
+       [1, 0, 1, 0, 1, 1, 0, 1, 0, 1],
+       [1, 0, 0, 0, 0, 0, 0, 1, 0, 1], 
+       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]]
+ROW_LEN = len(MAP[0])  # 10 buffer of two cols, number of columns
+COL_LEN = len(MAP)     # 6  buffer of two rows, number of rows
+
+# Create tx and rx threads
+Thread(target = receive, daemon = True).start()
+
 show_animation = True
 
-class GridMap:
+class HistMap:
 
     def __init__(self):
         self.data = None
@@ -40,6 +63,23 @@ class GridMap:
         self.y_w = None
         self.dx = 0.0  # movement distance
         self.dy = 0.0  # movement distance
+        self.probabilities = self.init_probabilities()  # set initial probablities
+    
+    def init_probabilities(self):
+        probs = np.ones((COL_LEN, ROW_LEN))
+        count = 0
+        for row in MAP:
+            for element in row:
+                if element==0: 
+                    count +=1
+        probs *= 1/count
+        return probs  
+    
+     
+    
+        
+    
+     
 
 
 def histogram_filter_localization(grid_map, u, z, yaw):
