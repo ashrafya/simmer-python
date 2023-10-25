@@ -35,13 +35,15 @@ MAX_Y = 25.0
 NOISE_RANGE = 2.0  # [m] 1σ range noise parameter
 NOISE_SPEED = 0.5  # [m/s] 1σ speed noise parameter
 
+size_of_bloc = 30.48 # 12 inches is 30.48 cm
+
 # What the map looks like
-MAP = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1], # 0 means it is okay to go there, clear
-       [1, 0, 0, 0, 0, 1, 0, 1, 0, 1], # 1 means that there is a wall or an obstacle
-       [1, 0, 0, 1, 0, 0, 0, 0, 0, 1], 
-       [1, 0, 1, 0, 1, 1, 0, 1, 0, 1],
-       [1, 0, 0, 0, 0, 0, 0, 1, 0, 1], 
-       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]]
+MAP = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0], # 0 means it is okay to go there, clear
+       [0, 1, 1, 1, 1, 0, 1, 0, 1, 0], # 1 means that there is a wall or an obstacle
+       [0, 1, 1, 0, 1, 1, 1, 1, 1, 0], 
+       [0, 1, 0, 1, 0, 0, 1, 0, 1, 0],
+       [0, 1, 1, 1, 1, 1, 1, 0, 1, 0], 
+       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
 ROW_LEN = len(MAP[0])  # 10 buffer of two cols, number of columns
 COL_LEN = len(MAP)     # 6  buffer of two rows, number of rows
 
@@ -63,17 +65,39 @@ class HistMap:
         self.y_w = None
         self.dx = 0.0  # movement distance
         self.dy = 0.0  # movement distance
+        self.map_openings = 24  # 24 blocks that the robot could exist in 
         self.probabilities = self.init_probabilities()  # set initial probablities
+        self.particle_placements = []
     
     def init_probabilities(self):
-        probs = np.ones((COL_LEN, ROW_LEN))
-        count = 0
-        for row in MAP:
+        """ 
+        At the end of this function the probability of the robot being in any square is uniform
+        i.e. it is 1/24 chance the robot is in any of the squares initially
+        """
+        probMAP = MAP.copy()
+        for row in probMAP:
             for element in row:
                 if element==0: 
-                    count +=1
-        probs *= 1/count
-        return probs  
+                    probMAP[row][element] = element/self.map_openings
+        return probMAP
+    # sample the measurements for each particle
+    # copmare measurements with the actual measurements
+    # update probabilities
+    # propagate particles
+    # repeat
+    
+    
+    def place_particles(self):
+        for i in range(len(MAP)):
+            for j in range(len(MAP[0])):
+                if MAP[i][j] == 0:
+                    prob = self.probabilities[i][j]*self.map_openings
+                    if math.floor(prob) >= 1:
+                        for i in range(math.floor(prob)):
+                            self.particle_placements.append([i, j])
+                
+                
+    
     
      
     
