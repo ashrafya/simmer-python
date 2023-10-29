@@ -6,8 +6,8 @@ import matplotlib as mpl
 import numpy as np
 from scipy.ndimage import gaussian_filter
 from scipy.stats import norm
-from alive_reckoning import transmit, receive, bytes_to_list, HOST, PORT_TX, PORT_RX
-from alive_reckoning import responses, time_rx
+# from alive_reckoning import transmit, receive, bytes_to_list, HOST, PORT_TX, PORT_RX
+# from alive_reckoning import responses, time_rx
 
 import socket
 import struct
@@ -44,11 +44,13 @@ MAP = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0], # 0 means it is okay to go there, clear
        [0, 1, 0, 1, 0, 0, 1, 0, 1, 0],
        [0, 1, 1, 1, 1, 1, 1, 0, 1, 0], 
        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+PROB_MAP = copy.deepcopy(MAP)
 ROW_LEN = len(MAP[0])  # 10 buffer of two cols, number of columns
 COL_LEN = len(MAP)     # 6  buffer of two rows, number of rows
+CONSTANT = 30.48
 
 # Create tx and rx threads
-Thread(target = receive, daemon = True).start()
+# Thread(target = receive, daemon = True).start()
 
 show_animation = True
 
@@ -67,19 +69,21 @@ class HistMap:
         self.dy = 0.0  # movement distance
         self.map_openings = 24  # 24 blocks that the robot could exist in 
         self.probabilities = self.init_probabilities()  # set initial probablities
-        self.particle_placements = []
+        self.particle_placements = {}
+        self.particle_readings = {}
+        self.isinit = True
     
     def init_probabilities(self):
         """ 
         At the end of this function the probability of the robot being in any square is uniform
         i.e. it is 1/24 chance the robot is in any of the squares initially
         """
-        probMAP = MAP.copy()
-        for row in probMAP:
+        for row in PROB_MAP:
             for element in row:
-                if element==0: 
-                    probMAP[row][element] = element/self.map_openings
-        return probMAP
+                if element==1:
+                    PROB_MAP[PROB_MAP.index(row)][row.index(element)] = round(element/self.map_openings, 8)
+
+        return PROB_MAP
     # sample the measurements for each particle
     # copmare measurements with the actual measurements
     # update probabilities
@@ -88,227 +92,251 @@ class HistMap:
     
     
     def place_particles(self):
-        for i in range(len(MAP)):
-            for j in range(len(MAP[0])):
-                if MAP[i][j] == 0:
-                    prob = self.probabilities[i][j]*self.map_openings
-                    if math.floor(prob) >= 1:
-                        for i in range(math.floor(prob)):
-                            self.particle_placements.append([i, j])
+        """
+        Places particles in the probable areas, if the probability is above a certain threshold i.e. 1/self.map_openings
+        """
+        count = 0
+        for r in range(len(MAP)):
+            for j in range(len(MAP[r])):
                 
+                # only go into this if the particles have not been placed yet
+                if self.isinit == True:
+                    if MAP[r][j] == 1:
+                        count += 1
+                        prob = self.probabilities[r][j] * self.map_openings
+                        if math.floor(prob) >= 1:
+                            for i in range(math.floor(prob)):
+                                self.particle_placements[count] = [r, j]
                 
-    
-    
-     
-    
-        
-    
-     
-
-
-def histogram_filter_localization(grid_map, u, z, yaw):
-    grid_map = motion_update(grid_map, u, yaw)
-
-    grid_map = observation_update(grid_map, z, RANGE_STD)
-
-    return grid_map
-
-
-def calc_gaussian_observation_pdf(grid_map, z, iz, ix, iy, std):
-    # predicted range
-    x = ix * grid_map.xy_resolution + grid_map.min_x
-    y = iy * grid_map.xy_resolution + grid_map.min_y
-    d = math.hypot(x - z[iz, 1], y - z[iz, 2])
-
-    # likelihood
-    pdf = norm.pdf(d - z[iz, 0], 0.0, std)
-
-    return pdf
-
-
-def observation_update(grid_map, z, std):
-    for iz in range(z.shape[0]):
-        for ix in range(grid_map.x_w):
-            for iy in range(grid_map.y_w):
-                grid_map.data[ix][iy] *= calc_gaussian_observation_pdf(
-                    grid_map, z, iz, ix, iy, std)
-
-    grid_map = normalize_probability(grid_map)
-
-    return grid_map
-
-
-def calc_control_input():
-    v = 1.0  # [m/s]
-    yaw_rate = 0.1  # [rad/s]
-    u = np.array([v, yaw_rate]).reshape(2, 1)
-    return u
-
-
-def motion_model(x, u):
-    F = np.array([[1.0, 0, 0, 0],
-                  [0, 1.0, 0, 0],
-                  [0, 0, 1.0, 0],
-                  [0, 0, 0, 0]])
-
-    B = np.array([[DT * math.cos(x[2, 0]), 0],
-                  [DT * math.sin(x[2, 0]), 0],
-                  [0.0, DT],
-                  [1.0, 0.0]])
-
-    x = F @ x + B @ u
-
-    return x
-
-
-def draw_heat_map(data, mx, my):
-    max_value = max([max(i_data) for i_data in data])
-    plt.grid(False)
-    plt.pcolor(mx, my, data, vmax=max_value, cmap=mpl.colormaps["Blues"])
-    plt.axis("equal")
-
-
-def observation(xTrue, u, RFID):
-    xTrue = motion_model(xTrue, u)
-
-    z = np.zeros((0, 3))
-
-    for i in range(len(RFID[:, 0])):
-
-        dx = xTrue[0, 0] - RFID[i, 0]
-        dy = xTrue[1, 0] - RFID[i, 1]
-        d = math.hypot(dx, dy)
-        if d <= MAX_RANGE:
-            # add noise to range observation
-            dn = d + np.random.randn() * NOISE_RANGE
-            zi = np.array([dn, RFID[i, 0], RFID[i, 1]])
-            z = np.vstack((z, zi))
-
-    # add noise to speed
-    ud = u[:, :]
-    ud[0] += np.random.randn() * NOISE_SPEED
-
-    return xTrue, z, ud
-
-
-def normalize_probability(grid_map):
-    sump = sum([sum(i_data) for i_data in grid_map.data])
-
-    for ix in range(grid_map.x_w):
-        for iy in range(grid_map.y_w):
-            grid_map.data[ix][iy] /= sump
-
-    return grid_map
-
-
-def init_grid_map(xy_resolution, min_x, min_y, max_x, max_y):
-    grid_map = GridMap()
-
-    grid_map.xy_resolution = xy_resolution
-    grid_map.min_x = min_x
-    grid_map.min_y = min_y
-    grid_map.max_x = max_x
-    grid_map.max_y = max_y
-    grid_map.x_w = int(round((grid_map.max_x - grid_map.min_x)
-                             / grid_map.xy_resolution))
-    grid_map.y_w = int(round((grid_map.max_y - grid_map.min_y)
-                             / grid_map.xy_resolution))
-
-    grid_map.data = [[1.0 for _ in range(grid_map.y_w)]
-                     for _ in range(grid_map.x_w)]
-    grid_map = normalize_probability(grid_map)
-
-    return grid_map
-
-
-def map_shift(grid_map, x_shift, y_shift):
-    tmp_grid_map = copy.deepcopy(grid_map.data)
-
-    for ix in range(grid_map.x_w):
-        for iy in range(grid_map.y_w):
-            nix = ix + x_shift
-            niy = iy + y_shift
-
-            if 0 <= nix < grid_map.x_w and 0 <= niy < grid_map.y_w:
-                grid_map.data[ix + x_shift][iy + y_shift] =\
-                    tmp_grid_map[ix][iy]
-
-    return grid_map
-
-
-def motion_update(grid_map, u, yaw):
-    grid_map.dx += DT * math.cos(yaw) * u[0]
-    grid_map.dy += DT * math.sin(yaw) * u[0]
-
-    x_shift = grid_map.dx // grid_map.xy_resolution
-    y_shift = grid_map.dy // grid_map.xy_resolution
-
-    if abs(x_shift) >= 1.0 or abs(y_shift) >= 1.0:  # map should be shifted
-        grid_map = map_shift(grid_map, int(x_shift[0]), int(y_shift[0]))
-        grid_map.dx -= x_shift * grid_map.xy_resolution
-        grid_map.dy -= y_shift * grid_map.xy_resolution
-
-    # Add motion noise
-    grid_map.data = gaussian_filter(grid_map.data, sigma=MOTION_STD)
-
-    return grid_map
-
-
-def calc_grid_index(grid_map):
-    mx, my = np.mgrid[slice(grid_map.min_x - grid_map.xy_resolution / 2.0,
-                            grid_map.max_x + grid_map.xy_resolution / 2.0,
-                            grid_map.xy_resolution),
-                      slice(grid_map.min_y - grid_map.xy_resolution / 2.0,
-                            grid_map.max_y + grid_map.xy_resolution / 2.0,
-                            grid_map.xy_resolution)]
-
-    return mx, my
-
-
-def main():
-    print(__file__ + " start!!")
-
-    # RF_ID positions [x, y]
-    RF_ID = np.array([[10.0, 0.0],
-                      [10.0, 10.0],
-                      [0.0, 15.0],
-                      [-5.0, 20.0]])
-
-    time = 0.0
-
-    xTrue = np.zeros((4, 1))
-    grid_map = init_grid_map(XY_RESOLUTION, MIN_X, MIN_Y, MAX_X, MAX_Y)
-    mx, my = calc_grid_index(grid_map)  # for grid map visualization
-
-    while SIM_TIME >= time:
-        time += DT
-        print(f"{time=:.1f}")
-
-        u = calc_control_input()
-
-        yaw = xTrue[2, 0]  # Orientation is known
-        xTrue, z, ud = observation(xTrue, u, RF_ID)
-
-        grid_map = histogram_filter_localization(grid_map, u, z, yaw)
-
-        if show_animation:
-            plt.cla()
-            # for stopping simulation with the esc key.
-            plt.gcf().canvas.mpl_connect(
-                'key_release_event',
-                lambda event: [exit(0) if event.key == 'escape' else None])
-            draw_heat_map(grid_map.data, mx, my)
-            plt.plot(xTrue[0, :], xTrue[1, :], "xr")
-            plt.plot(RF_ID[:, 0], RF_ID[:, 1], ".k")
-            for i in range(z.shape[0]):
-                plt.plot([xTrue[0, 0], z[i, 1]],
-                         [xTrue[1, 0], z[i, 2]],
-                         "-k")
-            plt.title("Time[s]:" + str(time)[0: 4])
-            plt.pause(0.1)
-
-    print("Done")
-
-
+                # go here if the initial particles have already been placed
+                else:
+                    pass
+                
+    def measure_particles(self):
+        """
+        for every particle, four readings will be taken and the readings will be compared to the actual robot readings
+        """
+        for value in range 
+
+                
 if __name__ == '__main__':
-    main()
+    hist = HistMap()
+    hist.place_particles()
+    print(f'how many openings in the map: {hist.map_openings}')
+    print(f'Probabiliities of the map: {hist.probabilities}')
+    print(f'Length of the MAP, i.e. number of rows: {len(MAP)}')
+    print(f'Length of the MAP row, i.e. number of cols: {len(MAP[0])}')
+    print(f'this is the particle placements{hist.particle_placements}')
+    print(len(hist.particle_placements))
+
+
+
+
+
+
+# def histogram_filter_localization(grid_map, u, z, yaw):
+#     grid_map = motion_update(grid_map, u, yaw)
+
+#     grid_map = observation_update(grid_map, z, RANGE_STD)
+
+#     return grid_map
+
+
+# def calc_gaussian_observation_pdf(grid_map, z, iz, ix, iy, std):
+#     # predicted range
+#     x = ix * grid_map.xy_resolution + grid_map.min_x
+#     y = iy * grid_map.xy_resolution + grid_map.min_y
+#     d = math.hypot(x - z[iz, 1], y - z[iz, 2])
+
+#     # likelihood
+#     pdf = norm.pdf(d - z[iz, 0], 0.0, std)
+
+#     return pdf
+
+
+# def observation_update(grid_map, z, std):
+#     for iz in range(z.shape[0]):
+#         for ix in range(grid_map.x_w):
+#             for iy in range(grid_map.y_w):
+#                 grid_map.data[ix][iy] *= calc_gaussian_observation_pdf(
+#                     grid_map, z, iz, ix, iy, std)
+
+#     grid_map = normalize_probability(grid_map)
+
+#     return grid_map
+
+
+# def calc_control_input():
+#     v = 1.0  # [m/s]
+#     yaw_rate = 0.1  # [rad/s]
+#     u = np.array([v, yaw_rate]).reshape(2, 1)
+#     return u
+
+
+# def motion_model(x, u):
+#     F = np.array([[1.0, 0, 0, 0],
+#                   [0, 1.0, 0, 0],
+#                   [0, 0, 1.0, 0],
+#                   [0, 0, 0, 0]])
+
+#     B = np.array([[DT * math.cos(x[2, 0]), 0],
+#                   [DT * math.sin(x[2, 0]), 0],
+#                   [0.0, DT],
+#                   [1.0, 0.0]])
+
+#     x = F @ x + B @ u
+
+#     return x
+
+
+# def draw_heat_map(data, mx, my):
+#     max_value = max([max(i_data) for i_data in data])
+#     plt.grid(False)
+#     plt.pcolor(mx, my, data, vmax=max_value, cmap=mpl.colormaps["Blues"])
+#     plt.axis("equal")
+
+
+# def observation(xTrue, u, RFID):
+#     xTrue = motion_model(xTrue, u)
+
+#     z = np.zeros((0, 3))
+
+#     for i in range(len(RFID[:, 0])):
+
+#         dx = xTrue[0, 0] - RFID[i, 0]
+#         dy = xTrue[1, 0] - RFID[i, 1]
+#         d = math.hypot(dx, dy)
+#         if d <= MAX_RANGE:
+#             # add noise to range observation
+#             dn = d + np.random.randn() * NOISE_RANGE
+#             zi = np.array([dn, RFID[i, 0], RFID[i, 1]])
+#             z = np.vstack((z, zi))
+
+#     # add noise to speed
+#     ud = u[:, :]
+#     ud[0] += np.random.randn() * NOISE_SPEED
+
+#     return xTrue, z, ud
+
+
+# def normalize_probability(grid_map):
+#     sump = sum([sum(i_data) for i_data in grid_map.data])
+
+#     for ix in range(grid_map.x_w):
+#         for iy in range(grid_map.y_w):
+#             grid_map.data[ix][iy] /= sump
+
+#     return grid_map
+
+
+# def init_grid_map(xy_resolution, min_x, min_y, max_x, max_y):
+#     grid_map = GridMap()
+
+#     grid_map.xy_resolution = xy_resolution
+#     grid_map.min_x = min_x
+#     grid_map.min_y = min_y
+#     grid_map.max_x = max_x
+#     grid_map.max_y = max_y
+#     grid_map.x_w = int(round((grid_map.max_x - grid_map.min_x)
+#                              / grid_map.xy_resolution))
+#     grid_map.y_w = int(round((grid_map.max_y - grid_map.min_y)
+#                              / grid_map.xy_resolution))
+
+#     grid_map.data = [[1.0 for _ in range(grid_map.y_w)]
+#                      for _ in range(grid_map.x_w)]
+#     grid_map = normalize_probability(grid_map)
+
+#     return grid_map
+
+
+# def map_shift(grid_map, x_shift, y_shift):
+#     tmp_grid_map = copy.deepcopy(grid_map.data)
+
+#     for ix in range(grid_map.x_w):
+#         for iy in range(grid_map.y_w):
+#             nix = ix + x_shift
+#             niy = iy + y_shift
+
+#             if 0 <= nix < grid_map.x_w and 0 <= niy < grid_map.y_w:
+#                 grid_map.data[ix + x_shift][iy + y_shift] =\
+#                     tmp_grid_map[ix][iy]
+
+#     return grid_map
+
+
+# def motion_update(grid_map, u, yaw):
+#     grid_map.dx += DT * math.cos(yaw) * u[0]
+#     grid_map.dy += DT * math.sin(yaw) * u[0]
+
+#     x_shift = grid_map.dx // grid_map.xy_resolution
+#     y_shift = grid_map.dy // grid_map.xy_resolution
+
+#     if abs(x_shift) >= 1.0 or abs(y_shift) >= 1.0:  # map should be shifted
+#         grid_map = map_shift(grid_map, int(x_shift[0]), int(y_shift[0]))
+#         grid_map.dx -= x_shift * grid_map.xy_resolution
+#         grid_map.dy -= y_shift * grid_map.xy_resolution
+
+#     # Add motion noise
+#     grid_map.data = gaussian_filter(grid_map.data, sigma=MOTION_STD)
+
+#     return grid_map
+
+
+# def calc_grid_index(grid_map):
+#     mx, my = np.mgrid[slice(grid_map.min_x - grid_map.xy_resolution / 2.0,
+#                             grid_map.max_x + grid_map.xy_resolution / 2.0,
+#                             grid_map.xy_resolution),
+#                       slice(grid_map.min_y - grid_map.xy_resolution / 2.0,
+#                             grid_map.max_y + grid_map.xy_resolution / 2.0,
+#                             grid_map.xy_resolution)]
+
+#     return mx, my
+
+
+# def main():
+#     print(__file__ + " start!!")
+
+#     # RF_ID positions [x, y]
+#     RF_ID = np.array([[10.0, 0.0],
+#                       [10.0, 10.0],
+#                       [0.0, 15.0],
+#                       [-5.0, 20.0]])
+
+#     time = 0.0
+
+#     xTrue = np.zeros((4, 1))
+#     grid_map = init_grid_map(XY_RESOLUTION, MIN_X, MIN_Y, MAX_X, MAX_Y)
+#     mx, my = calc_grid_index(grid_map)  # for grid map visualization
+
+#     while SIM_TIME >= time:
+#         time += DT
+#         print(f"{time=:.1f}")
+
+#         u = calc_control_input()
+
+#         yaw = xTrue[2, 0]  # Orientation is known
+#         xTrue, z, ud = observation(xTrue, u, RF_ID)
+
+#         grid_map = histogram_filter_localization(grid_map, u, z, yaw)
+
+#         if show_animation:
+#             plt.cla()
+#             # for stopping simulation with the esc key.
+#             plt.gcf().canvas.mpl_connect(
+#                 'key_release_event',
+#                 lambda event: [exit(0) if event.key == 'escape' else None])
+#             draw_heat_map(grid_map.data, mx, my)
+#             plt.plot(xTrue[0, :], xTrue[1, :], "xr")
+#             plt.plot(RF_ID[:, 0], RF_ID[:, 1], ".k")
+#             for i in range(z.shape[0]):
+#                 plt.plot([xTrue[0, 0], z[i, 1]],
+#                          [xTrue[1, 0], z[i, 2]],
+#                          "-k")
+#             plt.title("Time[s]:" + str(time)[0: 4])
+#             plt.pause(0.1)
+
+#     print("Done")
+
+
+# if __name__ == '__main__':
+#     main()
