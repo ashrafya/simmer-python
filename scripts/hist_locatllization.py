@@ -47,7 +47,7 @@ MAP = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0], # 0 means it is okay to go there, clear
 PROB_MAP = copy.deepcopy(MAP)
 ROW_LEN = len(MAP[0])  # 10 buffer of two cols, number of columns
 COL_LEN = len(MAP)     # 6  buffer of two rows, number of rows
-CONSTANT = 30.48
+CONSTANT = 30.48       # to map the list to 12 inch grids, 12 inch is read as 30.48 cm
 
 # Create tx and rx threads
 # Thread(target = receive, daemon = True).start()
