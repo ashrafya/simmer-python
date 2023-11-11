@@ -158,18 +158,7 @@ class Rover:
         
         
 class HistMap:
-
     def __init__(self):
-        self.data = None
-        self.xy_resolution = None
-        self.min_x = None
-        self.min_y = None
-        self.max_x = None
-        self.max_y = None
-        self.x_w = None
-        self.y_w = None
-        self.dx = 0.0  # movement distance
-        self.dy = 0.0  # movement distance
         self.map_openings = 24  # 24 blocks that the robot could exist in 
         self.probabilities = self.init_probabilities()  # set initial probablities
         self.particle_placements = {}
@@ -177,6 +166,9 @@ class HistMap:
         self.isinit = True
         self.MAP = MAP
         self.PROB_MAP = PROB_MAP
+        self.COLS = len(self.MAP[0])
+        self.ROWS = len(self.MAP)
+    
     
     def init_probabilities(self):
         """ 
@@ -189,11 +181,11 @@ class HistMap:
                     PROB_MAP[PROB_MAP.index(row)][row.index(element)] = round(element/self.map_openings, 8)
 
         return PROB_MAP
-    # sample the measurements for each particle
-    # copmare measurements with the actual measurements
-    # update probabilities
-    # propagate particles
-    # repeat
+        # sample the measurements for each particle
+        # copmare measurements with the actual measurements
+        # update probabilities
+        # propagate particles
+        # repeat
     
     
     def place_particles(self):
@@ -216,12 +208,72 @@ class HistMap:
                 # go here if the initial particles have already been placed
                 else:
                     pass
+        self.isinit = False    # so we dont place the initial particles again
+
                 
     def measure_particles(self):
         """
         for every particle, four readings will be taken and the readings will be compared to the actual robot readings
         """
-        pass
+        print(len(self.particle_placements))
+        for i, particle in enumerate(self.particle_placements.items()):
+            guess = [None, None, None, None]   # the guessed distances of each particle   N, E, S, W
+
+            # check north
+            placement = particle[1]
+            if placement[0] == 0:  
+                guess[0] = 0   # set north to be 0
+            elif placement[0] == self.ROWS - 1:
+                guess[2] = 0   # set south to 0
+            elif placement[1] == 0:
+                guess[3] = 0   # set west to 0
+            elif placement[1] == self.COLS - 1:
+                guess[1] = 0   # set east to zero
+            
+            # check north
+            N, distN = placement[0], 0
+            while N > 0:
+                if self.MAP[int(N)][int(placement[1])] == 1:
+                    distN += 1
+                    N -= 1
+                else:
+                    break
+            
+            # check east
+            E, distE = placement[1], 0
+            while E < self.COLS - 1:
+                if self.MAP[int(placement[0])][int(E)] == 1:
+                    distE += 1
+                    E += 1
+                else:
+                    break
+            
+            # check south
+            S, distS = placement[0], 0
+            while S < self.ROWS - 1:
+                if self.MAP[int(S)][int(placement[1])] == 1:
+                    distS += 1
+                    S += 1
+                else:
+                    break
+            
+            # check north
+            W, distW = placement[1], 0
+            while W > 0:
+                if self.MAP[int(placement[0])][int(W)] == 1:
+                    distW += 1
+                    W -= 1
+                else:
+                    break
+            
+            guess = [distN, distE, distS, distW]
+                
+            print(f"{i}: {particle[1]} {guess}") 
+
+        
+            
+            
+                
     
     def plot_probs(self):
         """ 
@@ -240,13 +292,16 @@ if __name__ == '__main__':
     hist = HistMap()
     rover = Rover()
     hist.place_particles()
+    # hist.plot_probs()
+    hist.measure_particles()
+    
+    
+    
+    
     # print(f'how many openings in the map: {hist.map_openings}')
     # print(f'Probabiliities of the map: {hist.probabilities}')
     # print(f'Length of the MAP, i.e. number of rows: {len(MAP)}')
     # print(f'Length of the MAP row, i.e. number of cols: {len(MAP[0])}')
     # print(f'this is the particle placements{hist.particle_placements}')
-    
-
-    hist.plot_probs()
     
     
