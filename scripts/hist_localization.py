@@ -126,6 +126,10 @@ def cosine_distance(a, b):
     calculates cosine similarity
     """
     return dot(a, b) / (norm(a) * norm(b))
+
+
+def manhattan_distance(a, b):
+    return np.abs(a-b).sum()
             
 class Rover:
     def __init__(self):
@@ -150,7 +154,7 @@ class Rover:
             returns updated directions list
         """
         transmit(name)
-        time.sleep(0.1)
+        time.sleep(0.05)
         try:
             directions[index] = round(responses[0])
         finally:
@@ -163,13 +167,13 @@ class Rover:
             directions (list): _description_
         """
         self.run_sensor('u0', 0, self.readings)
-        time.sleep(0.1)
+        time.sleep(0.55)
         self.run_sensor('u1', 3, self.readings)
-        time.sleep(0.1)
+        time.sleep(0.05)
         self.run_sensor('u2', 1, self.readings)
-        time.sleep(0.1)
+        time.sleep(0.05)
         self.run_sensor('u3', 2, self.readings)
-        time.sleep(0.1)
+        time.sleep(0.05)
         
         
 class HistMap:
@@ -183,6 +187,10 @@ class HistMap:
         self.PROB_MAP = np.array(PROB_MAP)
         self.COLS = len(self.MAP[0])
         self.ROWS = len(self.MAP)
+        self.num_particles = 120
+        self.kernel = [[0.2 , 0.25, 0.2 ],
+                       [0.2 , 1   , 0.25],
+                       [0.25, 0   , 0.25]]
     
     
     def add_rover(self, rover):
@@ -231,6 +239,21 @@ class HistMap:
                     if math.floor(prob) >= 1:
                         for i in range(math.floor(prob)):
                             self.particle_placements[r, j] = self.PROB_MAP[r][j]
+                            
+    def place_rand_particles(self):
+        """ 
+        places particles randomly upto an N amount, this will help speed up the localization process
+        """
+        placed = 0
+        self.particle_placements = {}
+        while placed <= self.num_particles:
+            coor = [np.random.randint(0, self.ROWS), np.random.randint(0, self.COLS)]
+            while self.PROB_MAP[coor[0]][coor[1]] == 0:
+                coor = [np.random.randint(0, self.ROWS), np.random.randint(0, self.COLS)]
+
+            self.particle_placements[coor[0], coor[1]] = self.PROB_MAP[coor[0]][coor[1]] + 0.50
+            placed += 1
+
 
 
                 
@@ -302,8 +325,38 @@ class HistMap:
     def update_prob_map(self):
         """ takes the virtual particle readings and probabilities and updates probabilities"""
         for k, v in self.particle_readings.items():
-            similarity = cosine_distance(v, self.rover.readings)
-            self.PROB_MAP[k[0]][k[1]] *= similarity
+            similarity = cosine_distance(np.array(v), np.array(self.rover.readings))
+            # try:
+            #     similarity = cosine_distance(v.sort(), self.rover.readings.sort())
+            # except:
+            #     similarity = cosine_distance(v, self.rover.readings)
+            
+            self.PROB_MAP[k[0]][k[1]] = 2*(self.PROB_MAP[k[0]][k[1]]) + similarity * self.kernel[1][1]
+            
+            try: self.PROB_MAP[k[0]][k[1]] += self.PROB_MAP[k[0] - 1][k[1]] * self.kernel[0][1]
+            except: pass
+            
+            try: self.PROB_MAP[k[0]][k[1]] += self.PROB_MAP[k[0] + 1][k[1]] * self.kernel[2][1]
+            except: pass
+            
+            try: self.PROB_MAP[k[0]][k[1]] += self.PROB_MAP[k[0]][k[1] - 1] * self.kernel[1][0]
+            except: pass
+            
+            try: self.PROB_MAP[k[0]][k[1]] += self.PROB_MAP[k[0]][k[1] + 1] * self.kernel[1][2]
+            except: pass
+            
+            try: self.PROB_MAP[k[0]][k[1]] += self.PROB_MAP[k[0] - 1][k[1] - 1] * self.kernel[0][0]
+            except: pass
+            
+            try: self.PROB_MAP[k[0]][k[1]] += self.PROB_MAP[k[0] - 1][k[1] + 2] * self.kernel[0][2]
+            except: pass
+            
+            try: self.PROB_MAP[k[0]][k[1]] += self.PROB_MAP[k[0] + 1][k[1] - 1] * self.kernel[2][0]
+            except: pass
+            
+            try: self.PROB_MAP[k[0]][k[1]] += self.PROB_MAP[k[0] + 1][k[1] + 2] * self.kernel[2][2]
+            except: pass
+            
             
             
    
@@ -314,8 +367,12 @@ class HistMap:
         """
         # print(self.PROB_MAP)
         # plt.imshow(np.random.random((50,50)))
+
         plt.matshow(self.PROB_MAP, cmap="RdYlGn")
         plt.colorbar()
+        plt.title("Robot Maze")
+        plt.xlabel('X-axis')
+        plt.ylabel('Y-axis')
         # plt.show()
         plt.savefig("picture.png")
 
@@ -331,12 +388,12 @@ if __name__ == '__main__':
     hist.normalize_probmap()
 
     while True:
+        start = time.time()
         rover.update_directions()
         hist.update_prob_map()
         hist.normalize_probmap()
+        hist.place_rand_particles()
     
-    
-
     
         # print(f'how many openings in the map: {hist.map_openings}')
         # print(f'Probabiliities of the map: {hist.probabilities}')
@@ -345,6 +402,7 @@ if __name__ == '__main__':
         # print(f'this is the particle placements{hist.particle_placements}')
         
         hist.plot_probs()
-        time.sleep(0.2)
-    
+        # time.sleep(0.2)
+        end = time.time()
+        print(f"total time: {end-start}s")    
     
