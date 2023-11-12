@@ -193,7 +193,9 @@ class HistMap:
     def normalize_probmap(self):
         """ normalize the probability map """
         probmax, probmin = self.PROB_MAP.max(), self.PROB_MAP.min()
-        self.PROB_MAP[self.PROB_MAP > 0] = (self.PROB_MAP - probmin) / (probmax - probmin)
+        mask = (self.PROB_MAP != 0)
+        np.putmask(self.PROB_MAP, mask, (self.PROB_MAP - probmin) / (probmax - probmin) + 0.05)
+        # self.PROB_MAP[self.PROB_MAP != 0] = (self.PROB_MAP - probmin) / (probmax - probmin)
     
     
     def init_probabilities(self):
