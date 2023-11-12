@@ -161,8 +161,8 @@ def print_text(directions:list):
     print(f"..................")
     print(f"BL:{float(directions[6]):02f} .. B:{float(directions[2]):02f} .. BR:{float(directions[7]):02f}")
     print("_________________________________________")
-    
-    
+
+
 def run_sensor(name:str, index:int, directions:list):
     """_summary_
     takes in the sensor name string and the index that the dirction the sensor reads in. The direction index
@@ -179,7 +179,6 @@ def run_sensor(name:str, index:int, directions:list):
         _type_: _description_
         returns updated directions list
     """
-    # print("SENSNNSONONRONONONONCHECKKCKCKCK")
     transmit(name)
     time.sleep(0.1)
     try:
