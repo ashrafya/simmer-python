@@ -130,10 +130,11 @@ def cosine_distance(a, b):
 
 def manhattan_distance(a, b):
     return np.abs(a-b).sum()
-            
+       
+     
 class Rover:
     def __init__(self):
-        self.readings = [None, None, None, None]    # initialize self.readings as list with None Values (no readigs yet)
+        self.readings = [None, None, None, None, None, None]    # initialize self.readings as list with None Values (no readigs yet)
         self.update_directions()       # populate readings list
         
         
@@ -167,12 +168,16 @@ class Rover:
             directions (list): _description_
         """
         self.run_sensor('u0', 0, self.readings)
-        time.sleep(0.55)
+        time.sleep(0.05)
         self.run_sensor('u1', 3, self.readings)
         time.sleep(0.05)
         self.run_sensor('u2', 1, self.readings)
         time.sleep(0.05)
         self.run_sensor('u3', 2, self.readings)
+        time.sleep(0.05)
+        self.run_sensor('u4', 4, self.readings)
+        time.sleep(0.05)
+        self.run_sensor('u5', 5, self.readings)
         time.sleep(0.05)
         
         
@@ -263,7 +268,7 @@ class HistMap:
         """
         print(len(self.particle_placements))
         for i, particle in enumerate(self.particle_placements.items()):
-            guess = [None, None, None, None]   # the guessed distances of each particle   N, E, S, W
+            guess = [None, None, None, None, None, None]   # the guessed distances of each particle   N, E, S, W
 
             # check north
             placement = particle[0]
@@ -311,9 +316,11 @@ class HistMap:
                     W -= 1
                 else:
                     break
-                
             
-            guess = [distN, distE, distS, distW]
+            distNE = math.sqrt(distN**2 + distE**2)
+            distNW = math.sqrt(distN**2 + distW**2)
+            
+            guess = [distN, distE, distS, distW, distNE, distNW]
             self.particle_readings[placement] = guess
             
             # cosine = cosine_distance(guess, self.rover.readings)
