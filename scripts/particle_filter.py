@@ -90,6 +90,7 @@ MAP =  [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1,
 
 
 PROB_MAP = copy.deepcopy(MAP)
+PARTICLE_MAP = copy.deepcopy(MAP)
 ROW_LEN = len(MAP[0])  # 10 buffer of two cols, number of columns
 COL_LEN = len(MAP)     # 6  buffer of two rows, number of rows
 CONSTANT = 7.62        # to map the list to 12 inch grids, 12 inch is read as 30.48 cm
@@ -125,7 +126,7 @@ def cosine_distance(a, b):
         
     calculates cosine similarity
     """
-    return dot(a, b) / (norm(a) * norm(b))
+    return np.dot(a, b)/(norm(a) * norm(b))
 
 
 def manhattan_distance(a, b):
@@ -192,10 +193,12 @@ class HistMap:
         self.PROB_MAP = np.array(PROB_MAP)
         self.COLS = len(self.MAP[0])
         self.ROWS = len(self.MAP)
+        self.PARTICLE_MAP = np.zeros((self.ROWS, self.COLS)) 
         self.num_particles = 120
         self.kernel = [[0.2 , 0.25, 0.2 ],
                        [0.2 , 1   , 0.25],
                        [0.25, 0   , 0.25]]
+        self.threshold = 0.95
     
     
     def add_rover(self, rover):
@@ -203,11 +206,17 @@ class HistMap:
         self.rover = rover
         
         
-    def normalize_probmap(self):
+    def normalize_probmap(self, particle=0):
         """ normalize the probability map """
-        probmax, probmin = self.PROB_MAP.max(), self.PROB_MAP.min()
-        mask = (self.PROB_MAP != 0)
-        np.putmask(self.PROB_MAP, mask, (self.PROB_MAP - probmin) / (probmax - probmin) + 0.05)
+        if not particle:
+            probmax, probmin = self.PROB_MAP.max(), self.PROB_MAP.min()
+            mask = (self.PROB_MAP != 0)
+            np.putmask(self.PROB_MAP, mask, (self.PROB_MAP - probmin) / (probmax - probmin) + 0.05)
+        else:
+            probmax, probmin = self.PARTICLE_MAP.max(), self.PARTICLE_MAP.min()
+            mask = (self.PARTICLE_MAP != 0)
+            np.putmask(self.PARTICLE_MAP, mask, (self.PARTICLE_MAP - probmin) / (probmax - probmin) + 0.05)
+            
         # self.PROB_MAP[self.PROB_MAP != 0] = (self.PROB_MAP - probmin) / (probmax - probmin)
     
     
@@ -244,29 +253,39 @@ class HistMap:
                     if math.floor(prob) >= 1:
                         for i in range(math.floor(prob)):
                             self.particle_placements[r, j] = self.PROB_MAP[r][j]
+                        
                             
     def place_rand_particles(self):
         """ 
         places particles randomly upto an N amount, this will help speed up the localization process
         """
-        placed = 0
-        self.particle_placements = {}
-        while placed <= self.num_particles:
+        # self.particle_placements = {}
+        while len(self.particle_placements) <= self.num_particles:
             coor = [np.random.randint(0, self.ROWS), np.random.randint(0, self.COLS)]
             while self.PROB_MAP[coor[0]][coor[1]] == 0:
                 coor = [np.random.randint(0, self.ROWS), np.random.randint(0, self.COLS)]
 
             self.particle_placements[coor[0], coor[1]] = self.PROB_MAP[coor[0]][coor[1]] + 0.50
-            placed += 1
-
-
-
+            
+    
+    def particle_thresholding(self):
+        """ decides the threshold for each particle and removes them """
+        temp_dict_placements = copy.deepcopy(self.particle_placements)
+        temp_dict_readings = copy.deepcopy(self.particle_readings)        
+        for k, v in self.particle_placements.items():
+            if v < self.threshold:
+                temp_dict_placements.pop(k)
+                temp_dict_readings.pop(k)
                 
+                
+        self.particle_readings = temp_dict_readings
+        self.particle_placements = temp_dict_placements
+        
+           
     def measure_particles(self):
         """
         for every particle, four readings will be taken and the readings will be compared to the actual robot readings
         """
-        print(len(self.particle_placements))
         for i, particle in enumerate(self.particle_placements.items()):
             guess = [None, None, None, None, None, None]   # the guessed distances of each particle   N, E, S, W
 
@@ -364,18 +383,34 @@ class HistMap:
             try: self.PROB_MAP[k[0]][k[1]] += self.PROB_MAP[k[0] + 1][k[1] + 2] * self.kernel[2][2]
             except: pass
             
+        
+    def update_particle_map(self):
+        """ 
+        set a threshold for how many particles they have there 
+        """
+        self.PARTICLE_MAP = np.zeros((self.ROWS, self.COLS))
+        for k, v in self.particle_readings.items():
+            similarity = cosine_distance(np.array(v), np.array(self.rover.readings))
+            if float(similarity) > self.threshold:
+                self.PARTICLE_MAP[k[0]][k[1]] += 1
+                
+            
             
             
    
     
-    def plot_probs(self):
+    def plot_probs(self, use_particle_map=False):
         """ 
         plot MAP
         """
         # print(self.PROB_MAP)
         # plt.imshow(np.random.random((50,50)))
-
-        plt.matshow(self.PROB_MAP, cmap="RdYlGn")
+        
+        if not use_particle_map:
+            plt.matshow(self.PROB_MAP, cmap="RdYlGn")
+        if use_particle_map:
+            plt.matshow(self.PARTICLE_MAP, cmap="RdYlGn")
+            
         plt.colorbar()
         plt.title("Robot Maze")
         plt.xlabel('X-axis')
@@ -392,23 +427,22 @@ if __name__ == '__main__':
     hist.add_rover(rover)
     hist.place_init_particles()
     hist.measure_particles()
-    hist.normalize_probmap()
+    hist.normalize_probmap(False)
+    threshold = 0.85
+    use_particle_map = True
 
     while True:
         start = time.time()
+        print(f"particle placements: {len(hist.particle_placements)} particle readings: {len(hist.particle_readings)}")
         rover.update_directions()
-        hist.update_prob_map()
-        hist.normalize_probmap()
+        hist.update_particle_map()
+        # hist.update_prob_map()
+        # hist.normalize_probmap(use_particle_map)
         hist.place_rand_particles()
-    
-    
-        # print(f'how many openings in the map: {hist.map_openings}')
-        # print(f'Probabiliities of the map: {hist.probabilities}')
-        # print(f'Length of the MAP, i.e. number of rows: {len(MAP)}')
-        # print(f'Length of the MAP row, i.e. number of cols: {len(MAP[0])}')
-        # print(f'this is the particle placements{hist.particle_placements}')
+        hist.measure_particles()
+        hist.particle_thresholding()   
+        hist.plot_probs(use_particle_map)
         
-        hist.plot_probs()
         # time.sleep(0.2)
         end = time.time()
         print(f"total time: {end-start}s")    
