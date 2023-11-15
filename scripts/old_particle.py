@@ -71,23 +71,22 @@ NOISE_SPEED = 0.5  # [m/s] 1σ speed noise parameter
 size_of_bloc = 7.62 # 12 inches is 30.48 cm
 
 # What the map looks like
-MAP =   [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        [1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1],
-        [1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1],
-        [1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1],
-        [1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1]]
-
+MAP =  [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1],
+        [1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1],
+        [1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1],
+        [1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1]]
 
 
 PROB_MAP = copy.deepcopy(MAP)
@@ -106,16 +105,27 @@ def map_extend(map):
     temp = []
     for row in map:
         for element in row:
-            if element == 1:
+            if element == 0:
                 temp.append(1)
             else:
-                temp.append(-1)
+                temp.append(0)
         final.append(temp)
         temp = []
     print(final)
     
 
 def cosine_distance(a, b):
+    """_summary_
+
+    Args:
+        a (_type_): _description_ vector a
+        b (_type_): _description_ vector b
+
+    Returns:
+        _type_: value from 0 to 1 of similarity
+        
+    calculates cosine similarity
+    """
     return np.dot(a, b)/(norm(a) * norm(b))
 
 
@@ -130,10 +140,20 @@ class Rover:
         
         
     def run_sensor(self, name:str, index:int, directions:list):
-        """
+        """_summary_
         takes in the sensor name string and the index that the dirction the sensor reads in. The direction index
         is insipired from the directions list. The funtion takes this information, reads from the sensor and 
         stores the value in the directions list.
+        Args:
+            name (str): _description_
+            name of the sensor
+            index (int): _description_
+            the index of the direction this sensor reads in. The direction is inspired from the directions list. 
+            val (int):
+            value of sensor
+        Returns:
+            _type_: _description_
+            returns updated directions list
         """
         transmit(name)
         time.sleep(0.05)
@@ -143,10 +163,11 @@ class Rover:
             pass
         self.readings = directions
     
-    
-    
     def update_directions(self):
-        """ update directions list in rover """
+        """
+        Args:
+            directions (list): _description_
+        """
         self.run_sensor('u0', 0, self.readings)
         time.sleep(0.05)
         self.run_sensor('u1', 3, self.readings)
@@ -159,7 +180,6 @@ class Rover:
         time.sleep(0.05)
         self.run_sensor('u5', 5, self.readings)
         time.sleep(0.05)
-        
         
         
 class HistMap:
@@ -175,11 +195,11 @@ class HistMap:
         self.COLS = len(self.MAP[0])
         self.ROWS = len(self.MAP)
         self.PARTICLE_MAP = np.zeros((self.ROWS, self.COLS)) 
-        self.num_particles = 59
+        self.num_particles = 119
         self.kernel = [[0.2 , 0.25, 0.2 ],
                        [0.2 , 1   , 0.25],
                        [0.25, 0   , 0.25]]
-        self.threshold = 0.75
+        self.threshold = 0.70
     
     
     
@@ -187,6 +207,21 @@ class HistMap:
         """ add an instance of the rover into the code """
         self.rover = rover
         
+        
+        
+    def normalize_probmap(self, particle=0):
+        """ normalize the probability map """
+        if not particle:
+            probmax, probmin = self.PROB_MAP.max(), self.PROB_MAP.min()
+            mask = (self.PROB_MAP != 0)
+            np.putmask(self.PROB_MAP, mask, (self.PROB_MAP - probmin) / (probmax - probmin) + 0.05)
+        else:
+            probmax, probmin = self.PARTICLE_MAP.max(), self.PARTICLE_MAP.min()
+            mask = (self.PARTICLE_MAP != 0)
+            np.putmask(self.PARTICLE_MAP, mask, (self.PARTICLE_MAP - probmin) / (probmax - probmin) + 0.05)
+            
+        # self.PROB_MAP[self.PROB_MAP != 0] = (self.PROB_MAP - probmin) / (probmax - probmin)
+    
     
     
     def init_probabilities(self):
@@ -200,6 +235,26 @@ class HistMap:
                     PROB_MAP[PROB_MAP.index(row)][row.index(element)] = round(element/self.map_openings, 8)
 
         return PROB_MAP
+    
+    
+    
+    def place_init_particles(self):
+        """
+        Places particles in the probable areas, if the probability is above a certain threshold i.e. 1/self.map_openings
+        """
+        count = 0
+        for r in range(len(MAP)):
+            for j in range(len(MAP[r])):
+                
+                # only go into this if the particles have not been placed yet
+                if MAP[r][j] == 1:
+                    count += 1
+                    prob = self.probabilities[r][j] * self.map_openings
+                    if math.floor(prob) >= 1:
+                        for i in range(math.floor(prob)):
+                            self.particle_placements[r, j] = self.PROB_MAP[r][j]
+        # initalize the count as well
+        # self.particle_place_count = self.particle_placements
                         
        
                             
@@ -207,29 +262,36 @@ class HistMap:
         """ 
         places particles randomly upto an N amount, this will help speed up the localization process
         """
-        while sum(self.particle_place_count.values()) <= self.num_particles:                # dont have more particles than max set
+        # self.particle_placements = {}
+        print(f"sum(self.particle_place_count.values()): {sum(self.particle_place_count.values())}")
+        print(f"len(self.particle_readings): {len(self.particle_readings)}")
+        print(f"len(self.particle_placements): {len(self.particle_placements)}")
+        while sum(self.particle_place_count.values()) <= self.num_particles:
             coor = [np.random.randint(0, self.ROWS), np.random.randint(0, self.COLS)]
-            while self.MAP[coor[0]][coor[1]] == -1:                                         # keep trying until we find a legal particle
+            while self.MAP[coor[0]][coor[1]] == 0:
                 coor = [np.random.randint(0, self.ROWS), np.random.randint(0, self.COLS)]
             
+            print(f"self.particle_place_count: {self.particle_place_count}")
+            print(f"len(self.particle_place_count): {len(self.particle_place_count)}")
             
-            if (coor[0], coor[1]) not in self.particle_place_count:                         # keep count of how many particles in that location
+            if (coor[0], coor[1]) not in self.particle_place_count:
                 self.particle_place_count[coor[0], coor[1]] = 1
             else:
                 self.particle_place_count[coor[0], coor[1]] += 1
+            
+            print(f"self.PROB_MAP[coor[0]][coor[1]]: {self.PROB_MAP[coor[0]][coor[1]]}")
+
+            # self.particle_placements[coor[0], coor[1]] = self.PROB_MAP[coor[0]][coor[1]]
             
     
     
     def particle_thresholding(self):
         """ decides the threshold for each particle and removes them """
-        temp_dict_placements = copy.deepcopy(self.particle_placements)                      # deepcopy to prevent aliasing since we 
-        temp_dict_readings = copy.deepcopy(self.particle_readings)                          #   change dics in the loop
-        temp_particle_place_count = copy.deepcopy(self.particle_place_count) 
-        count = 0               
+        temp_dict_placements = copy.deepcopy(self.particle_placements)
+        temp_dict_readings = copy.deepcopy(self.particle_readings)        
+        temp_particle_place_count = copy.deepcopy(self.particle_place_count)        
         for k, v in self.particle_placements.items():
-
             if v < self.threshold:
-                count += 1
                 temp_dict_placements.pop(k)
                 temp_dict_readings.pop(k)
                 if k in temp_particle_place_count:
@@ -237,7 +299,8 @@ class HistMap:
                 else:
                     pass
 
-        self.particle_place_count = temp_particle_place_count                               # reassign the temp dics to class properties
+                
+        self.particle_place_count = temp_particle_place_count
         self.particle_readings = temp_dict_readings
         self.particle_placements = temp_dict_placements
         
@@ -247,7 +310,7 @@ class HistMap:
         """
         for every particle, four readings will be taken and the readings will be compared to the actual robot readings
         """
-        for i, particle in enumerate(self.particle_place_count.items()):
+        for i, particle in enumerate(self.particle_placements.items()):
             guess = [None, None, None, None, None, None]   # the guessed distances of each particle   N, E, S, W
 
             # check north
@@ -302,21 +365,63 @@ class HistMap:
             
             guess = [distN, distE, distS, distW, distNE, distNW]
             self.particle_readings[placement] = guess
-            self.particle_placements[placement] = cosine_distance(np.array(guess), np.array(self.rover.readings))  
+            self.particle_placements[placement] = cosine_distance(np.array(guess), np.array(self.rover.readings))
+            
+            # cosine = cosine_distance(guess, self.rover.readings)
+            
+            # print(f"{i}: {placement} {guess} {cosine}") 
+        # print(f'The rover readings are {np.array(self.rover.readings)/CONSTANT}')
         
-    
+        
+        
+    def update_prob_map(self):
+        """ takes the virtual particle readings and probabilities and updates probabilities"""
+        for k, v in self.particle_readings.items():
+            similarity = cosine_distance(np.array(v), np.array(self.rover.readings))
+            # try:
+            #     similarity = cosine_distance(v.sort(), self.rover.readings.sort())
+            # except:
+            #     similarity = cosine_distance(v, self.rover.readings)
+            
+            self.PROB_MAP[k[0]][k[1]] = 2*(self.PROB_MAP[k[0]][k[1]]) + similarity * self.kernel[1][1]
+            
+            try: self.PROB_MAP[k[0]][k[1]] += self.PROB_MAP[k[0] - 1][k[1]] * self.kernel[0][1]
+            except: pass
+            
+            try: self.PROB_MAP[k[0]][k[1]] += self.PROB_MAP[k[0] + 1][k[1]] * self.kernel[2][1]
+            except: pass
+            
+            try: self.PROB_MAP[k[0]][k[1]] += self.PROB_MAP[k[0]][k[1] - 1] * self.kernel[1][0]
+            except: pass
+            
+            try: self.PROB_MAP[k[0]][k[1]] += self.PROB_MAP[k[0]][k[1] + 1] * self.kernel[1][2]
+            except: pass
+            
+            try: self.PROB_MAP[k[0]][k[1]] += self.PROB_MAP[k[0] - 1][k[1] - 1] * self.kernel[0][0]
+            except: pass
+            
+            try: self.PROB_MAP[k[0]][k[1]] += self.PROB_MAP[k[0] - 1][k[1] + 2] * self.kernel[0][2]
+            except: pass
+            
+            try: self.PROB_MAP[k[0]][k[1]] += self.PROB_MAP[k[0] + 1][k[1] - 1] * self.kernel[2][0]
+            except: pass
+            
+            try: self.PROB_MAP[k[0]][k[1]] += self.PROB_MAP[k[0] + 1][k[1] + 2] * self.kernel[2][2]
+            except: pass
+          
+            
+        
     def update_particle_map(self):
         """ 
         set a threshold for how many particles they have there 
         """
         self.PARTICLE_MAP = np.zeros((self.ROWS, self.COLS))
         for k, v in self.particle_place_count.items():
-            try:
-                self.particle_placements[k]
-            except: pass
-            else:
-                if self.particle_placements[k] >= self.threshold: 
-                    self.PARTICLE_MAP[k[0]][k[1]] = v
+            # print(f"this is how many particle readings there are in update particle map {len(self.particle_readings)}")
+            # similarity = cosine_distance(np.array(v), np.array(self.rover.readings))
+            self.PARTICLE_MAP[k[0]][k[1]] = v
+            # if float(similarity) > self.threshold:
+            #     self.PARTICLE_MAP[k[0]][k[1]] += 1    
             
             
     
@@ -337,8 +442,9 @@ if __name__ == '__main__':
     hist = HistMap()
     rover = Rover()
     hist.add_rover(rover)
-    hist.place_rand_particles()             # place initial probabilities, important for later functions
-    hist.measure_particles()                #
+    hist.place_init_particles()
+    hist.measure_particles()
+    # hist.normalize_probmap(False)
     threshold = 0.85
     use_particle_map = True
 
@@ -347,6 +453,8 @@ if __name__ == '__main__':
         rover.update_directions()
         hist.place_rand_particles()
         hist.update_particle_map()
+        # hist.update_prob_map()
+        # hist.normalize_probmap(use_particle_map)
         hist.measure_particles()
         hist.particle_thresholding()   
         hist.plot_probs()
