@@ -188,22 +188,25 @@ class HistMap:
         self.probabilities = self.init_probabilities()  # set initial probablities
         self.particle_placements = {}
         self.particle_readings = {}
+        self.particle_place_count = {}
         self.isinit = True
         self.MAP = np.array(MAP)
         self.PROB_MAP = np.array(PROB_MAP)
         self.COLS = len(self.MAP[0])
         self.ROWS = len(self.MAP)
         self.PARTICLE_MAP = np.zeros((self.ROWS, self.COLS)) 
-        self.num_particles = 120
+        self.num_particles = 119
         self.kernel = [[0.2 , 0.25, 0.2 ],
                        [0.2 , 1   , 0.25],
                        [0.25, 0   , 0.25]]
         self.threshold = 0.95
     
     
+    
     def add_rover(self, rover):
         """ add an instance of the rover into the code """
         self.rover = rover
+        
         
         
     def normalize_probmap(self, particle=0):
@@ -220,6 +223,7 @@ class HistMap:
         # self.PROB_MAP[self.PROB_MAP != 0] = (self.PROB_MAP - probmin) / (probmax - probmin)
     
     
+    
     def init_probabilities(self):
         """ 
         At the end of this function the probability of the robot being in any square is uniform
@@ -231,11 +235,7 @@ class HistMap:
                     PROB_MAP[PROB_MAP.index(row)][row.index(element)] = round(element/self.map_openings, 8)
 
         return PROB_MAP
-        # sample the measurements for each particle
-        # copmare measurements with the actual measurements
-        # update probabilities
-        # propagate particles
-        # repeat
+    
     
     
     def place_init_particles(self):
@@ -254,6 +254,7 @@ class HistMap:
                         for i in range(math.floor(prob)):
                             self.particle_placements[r, j] = self.PROB_MAP[r][j]
                         
+       
                             
     def place_rand_particles(self):
         """ 
@@ -262,25 +263,38 @@ class HistMap:
         # self.particle_placements = {}
         while len(self.particle_placements) <= self.num_particles:
             coor = [np.random.randint(0, self.ROWS), np.random.randint(0, self.COLS)]
-            while self.PROB_MAP[coor[0]][coor[1]] == 0:
+            while self.MAP[coor[0]][coor[1]] == 0:
                 coor = [np.random.randint(0, self.ROWS), np.random.randint(0, self.COLS)]
+            
+            print(f"self.particle_place_count: {self.particle_place_count}")
+            print(f"len(self.particle_place_count): {len(self.particle_place_count)}")
+            
+            if (coor[0], coor[1]) not in self.particle_place_count:
+                self.particle_place_count[coor[0], coor[1]] = 1
+            elif (coor[0], coor[1]) in self.particle_place_count:
+                self.particle_place_count[coor[0], coor[1]] += 1
 
             self.particle_placements[coor[0], coor[1]] = self.PROB_MAP[coor[0]][coor[1]] + 0.50
             
+    
     
     def particle_thresholding(self):
         """ decides the threshold for each particle and removes them """
         temp_dict_placements = copy.deepcopy(self.particle_placements)
         temp_dict_readings = copy.deepcopy(self.particle_readings)        
+        temp_particle_place_count = copy.deepcopy(self.particle_place_count)        
         for k, v in self.particle_placements.items():
             if v < self.threshold:
                 temp_dict_placements.pop(k)
                 temp_dict_readings.pop(k)
+                try: temp_particle_place_count.pop(k)
+                except: pass
                 
-                
+        self.particle_place_count = temp_particle_place_count
         self.particle_readings = temp_dict_readings
         self.particle_placements = temp_dict_placements
         
+         
            
     def measure_particles(self):
         """
@@ -348,6 +362,7 @@ class HistMap:
         # print(f'The rover readings are {np.array(self.rover.readings)/CONSTANT}')
         
         
+        
     def update_prob_map(self):
         """ takes the virtual particle readings and probabilities and updates probabilities"""
         for k, v in self.particle_readings.items():
@@ -382,6 +397,7 @@ class HistMap:
             
             try: self.PROB_MAP[k[0]][k[1]] += self.PROB_MAP[k[0] + 1][k[1] + 2] * self.kernel[2][2]
             except: pass
+          
             
         
     def update_particle_map(self):
@@ -389,15 +405,14 @@ class HistMap:
         set a threshold for how many particles they have there 
         """
         self.PARTICLE_MAP = np.zeros((self.ROWS, self.COLS))
-        for k, v in self.particle_readings.items():
-            similarity = cosine_distance(np.array(v), np.array(self.rover.readings))
-            if float(similarity) > self.threshold:
-                self.PARTICLE_MAP[k[0]][k[1]] += 1
-                
+        for k, v in self.particle_place_count.items():
+            # print(f"this is how many particle readings there are in update particle map {len(self.particle_readings)}")
+            # similarity = cosine_distance(np.array(v), np.array(self.rover.readings))
+            self.PARTICLE_MAP[k[0]][k[1]] = v
+            # if float(similarity) > self.threshold:
+            #     self.PARTICLE_MAP[k[0]][k[1]] += 1    
             
             
-            
-   
     
     def plot_probs(self, use_particle_map=False):
         """ 
@@ -419,7 +434,6 @@ class HistMap:
         plt.savefig("picture.png")
 
         
-
                 
 if __name__ == '__main__':
     hist = HistMap()
@@ -433,9 +447,10 @@ if __name__ == '__main__':
 
     while True:
         start = time.time()
-        print(f"particle placements: {len(hist.particle_placements)} particle readings: {len(hist.particle_readings)}")
+        # print(f"particle placements: {len(hist.particle_placements)} particle readings: {len(hist.particle_readings)}")
         rover.update_directions()
         hist.update_particle_map()
+        # print(hist.PARTICLE_MAP)
         # hist.update_prob_map()
         # hist.normalize_probmap(use_particle_map)
         hist.place_rand_particles()
@@ -445,5 +460,5 @@ if __name__ == '__main__':
         
         # time.sleep(0.2)
         end = time.time()
-        print(f"total time: {end-start}s")    
+        print(f"time step: {end-start}s")    
     
