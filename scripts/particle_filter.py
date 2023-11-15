@@ -199,7 +199,7 @@ class HistMap:
         self.kernel = [[0.2 , 0.25, 0.2 ],
                        [0.2 , 1   , 0.25],
                        [0.25, 0   , 0.25]]
-        self.threshold = 0.95
+        self.threshold = 0.70
     
     
     
@@ -253,6 +253,8 @@ class HistMap:
                     if math.floor(prob) >= 1:
                         for i in range(math.floor(prob)):
                             self.particle_placements[r, j] = self.PROB_MAP[r][j]
+        # initalize the count as well
+        # self.particle_place_count = self.particle_placements
                         
        
                             
@@ -261,7 +263,10 @@ class HistMap:
         places particles randomly upto an N amount, this will help speed up the localization process
         """
         # self.particle_placements = {}
-        while len(self.particle_placements) <= self.num_particles:
+        print(f"sum(self.particle_place_count.values()): {sum(self.particle_place_count.values())}")
+        print(f"len(self.particle_readings): {len(self.particle_readings)}")
+        print(f"len(self.particle_placements): {len(self.particle_placements)}")
+        while sum(self.particle_place_count.values()) <= self.num_particles:
             coor = [np.random.randint(0, self.ROWS), np.random.randint(0, self.COLS)]
             while self.MAP[coor[0]][coor[1]] == 0:
                 coor = [np.random.randint(0, self.ROWS), np.random.randint(0, self.COLS)]
@@ -271,10 +276,12 @@ class HistMap:
             
             if (coor[0], coor[1]) not in self.particle_place_count:
                 self.particle_place_count[coor[0], coor[1]] = 1
-            elif (coor[0], coor[1]) in self.particle_place_count:
+            else:
                 self.particle_place_count[coor[0], coor[1]] += 1
+            
+            print(f"self.PROB_MAP[coor[0]][coor[1]]: {self.PROB_MAP[coor[0]][coor[1]]}")
 
-            self.particle_placements[coor[0], coor[1]] = self.PROB_MAP[coor[0]][coor[1]] + 0.50
+            # self.particle_placements[coor[0], coor[1]] = self.PROB_MAP[coor[0]][coor[1]]
             
     
     
@@ -287,8 +294,11 @@ class HistMap:
             if v < self.threshold:
                 temp_dict_placements.pop(k)
                 temp_dict_readings.pop(k)
-                try: temp_particle_place_count.pop(k)
-                except: pass
+                if k in temp_particle_place_count:
+                    temp_particle_place_count.pop(k)
+                else:
+                    pass
+
                 
         self.particle_place_count = temp_particle_place_count
         self.particle_readings = temp_dict_readings
@@ -355,6 +365,7 @@ class HistMap:
             
             guess = [distN, distE, distS, distW, distNE, distNW]
             self.particle_readings[placement] = guess
+            self.particle_placements[placement] = cosine_distance(np.array(guess), np.array(self.rover.readings))
             
             # cosine = cosine_distance(guess, self.rover.readings)
             
@@ -418,19 +429,11 @@ class HistMap:
         """ 
         plot MAP
         """
-        # print(self.PROB_MAP)
-        # plt.imshow(np.random.random((50,50)))
-        
-        if not use_particle_map:
-            plt.matshow(self.PROB_MAP, cmap="RdYlGn")
-        if use_particle_map:
-            plt.matshow(self.PARTICLE_MAP, cmap="RdYlGn")
-            
+        plt.matshow(self.PARTICLE_MAP, cmap="RdYlGn")
         plt.colorbar()
         plt.title("Robot Maze")
         plt.xlabel('X-axis')
         plt.ylabel('Y-axis')
-        # plt.show()
         plt.savefig("picture.png")
 
         
@@ -441,24 +444,20 @@ if __name__ == '__main__':
     hist.add_rover(rover)
     hist.place_init_particles()
     hist.measure_particles()
-    hist.normalize_probmap(False)
+    # hist.normalize_probmap(False)
     threshold = 0.85
     use_particle_map = True
 
-    while True:
+    while True:        
         start = time.time()
-        # print(f"particle placements: {len(hist.particle_placements)} particle readings: {len(hist.particle_readings)}")
         rover.update_directions()
+        hist.place_rand_particles()
         hist.update_particle_map()
-        # print(hist.PARTICLE_MAP)
         # hist.update_prob_map()
         # hist.normalize_probmap(use_particle_map)
-        hist.place_rand_particles()
         hist.measure_particles()
         hist.particle_thresholding()   
-        hist.plot_probs(use_particle_map)
-        
-        # time.sleep(0.2)
+        hist.plot_probs()
         end = time.time()
         print(f"time step: {end-start}s")    
     
