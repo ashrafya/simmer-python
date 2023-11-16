@@ -84,30 +84,87 @@ Thread(target = receive, daemon = True).start()
 RUNNING = True
 cmd_sequence = ['w0-36', 'r0-90', 'w0-36', 'r0-90', 'w0-12', 'r0--90', 'w0-24', 'r0--90', 'w0-6', 'r0-720']
 
+def log_to_file_and_print(input_string, log_file_path='boi.txt'):
+    try:
+        # Open the log file in append mode
+        with open(log_file_path, 'a') as log_file:
+            # Write the input string to the log file
+            log_file.write("\t" + input_string)
+        
+        # Print the input string to the console
+        print(input_string)
+
+    except Exception as e:
+        # Handle any exceptions that may occur
+        print(f"An error occurred: {str(e)}")
+        
 ct = 0
 while RUNNING:
 
     if ct < len(cmd_sequence):
-        transmit('u0')
-        time.sleep(0.1)
-        print(f"Ultrasonic 0 reading: {round(responses[0], 3)}")
-        transmit('u1')
-        time.sleep(0.1)
-        print(f"Ultrasonic 1 reading: {round(responses[0], 3)}")
-        transmit('u2')
-        time.sleep(0.1)
-        print(f"Ultrasonic 2 reading: {round(responses[0], 3)}")
-        transmit('u3')
-        time.sleep(0.1)
-        print(f"Ultrasonic 3 reading: {round(responses[0], 3)}")
 
+        transmit('u0')
+        time.sleep(0.05)
+        log_to_file_and_print("U0: " + '{:06.6}'.format(round(responses[0], 3)))
+        if responses[0]<2:
+            transmit('xx')
+            log_to_file_and_print("TOO CLOSE TO WALL I\"M SCARED!!!")
+            time.sleep(0.05)
+            break
+
+        transmit('u1')
+        time.sleep(0.05)
+        log_to_file_and_print("U1: " + '{:06.6}'.format(round(responses[0], 3)))
+        if responses[0]<2:
+            transmit('xx')
+            log_to_file_and_print("TOO CLOSE TO WALL I\"M SCARED!!!")
+            time.sleep(0.05)
+            break
+
+        transmit('u2')
+        time.sleep(0.05)
+        log_to_file_and_print("U2: " + '{:06.6}'.format(round(responses[0], 3)))
+        if responses[0]<2:
+            transmit('xx')
+            log_to_file_and_print("TOO CLOSE TO WALL I\"M SCARED!!!")
+            time.sleep(0.05)
+            break
+
+        transmit('u3')
+        time.sleep(0.05)
+        log_to_file_and_print("U3: " + '{:06.6}'.format(round(responses[0], 3)))
+        if responses[0]<2:
+            transmit('xx')
+            log_to_file_and_print("TOO CLOSE TO WALL I\"M SCARED!!!")
+            time.sleep(0.05)
+            break
+
+        transmit('u4')
+        time.sleep(0.05)
+        log_to_file_and_print("U4: " + '{:06.6}'.format(round(responses[0], 3)))
+        if responses[0]<2:
+            transmit('xx')
+            log_to_file_and_print("TOO CLOSE TO WALL I\"M SCARED!!!")
+            time.sleep(0.05)
+            break
+        
+        transmit('u5')
+        time.sleep(0.05)
+        log_to_file_and_print("U5: " + '{:06.6}'.format(round(responses[0], 3)))
+        if responses[0]<2:
+            transmit('xx')
+            log_to_file_and_print("TOO CLOSE TO WALL I\"M SCARED!!!")
+            time.sleep(0.05)
+            break
+        
+        log_to_file_and_print("\n")
         transmit(cmd_sequence[ct])
-        time.sleep(0.1)
+        time.sleep(0.05)
 
         if responses[0] == math.inf:
             ct += 1
 
-        time.sleep(0.1)
+        time.sleep(0.05)
     else:
         RUNNING = False
-        print("Sequence complete!")
+        log_to_file_and_print("Sequence complete!")

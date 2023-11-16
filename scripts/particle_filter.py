@@ -199,7 +199,7 @@ class HistMap:
         self.kernel = [[0.2 , 0.25, 0.2 ],
                        [0.2 , 1   , 0.25],
                        [0.25, 0   , 0.25]]
-        self.threshold = 0.70
+        self.threshold = 0.80
     
     
     
@@ -253,9 +253,7 @@ class HistMap:
                     if math.floor(prob) >= 1:
                         for i in range(math.floor(prob)):
                             self.particle_placements[r, j] = self.PROB_MAP[r][j]
-        # initalize the count as well
-        # self.particle_place_count = self.particle_placements
-                        
+             
        
                             
     def place_rand_particles(self):
