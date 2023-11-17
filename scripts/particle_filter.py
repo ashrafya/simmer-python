@@ -43,6 +43,7 @@ def receive():
             except TimeoutError:
                 print('Response not received from robot.')
                 _thread.interrupt_main()
+        
 
 def bytes_to_list(msg):
     num_responses = int(len(msg)/8)
